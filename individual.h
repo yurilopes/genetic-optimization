@@ -1,6 +1,6 @@
 #include <vector>
 
-typedef int32_t (__fastcall *FitnessFunction)(vector<int32_t>*);
+typedef int32_t (*FitnessFunction)(vector<int32_t>*);
 
 class Individual{
     protected:

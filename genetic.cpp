@@ -6,7 +6,7 @@ using namespace std;
 #include "population.h"
 
 
-int32_t __fastcall fitnessFunction(vector<int32_t> *variables){
+int32_t fitnessFunction(vector<int32_t> *variables){
     int32_t soma = 0;
     for(vector<int32_t>::iterator it = variables->begin(); it!=variables->end(); it++){
         soma += *it;

@@ -1,4 +1,5 @@
-#include <iostream>
+//Comment this line below if running in Visual Studio
+#include "stdafx.h"
 
 using namespace std;
 
@@ -23,6 +24,8 @@ int main(){
     Population population(2, 3, fitnessFunction);
     population.calculateFitness();
     population.printPopulation();
+
+	system("pause");
 
 
     return 0;

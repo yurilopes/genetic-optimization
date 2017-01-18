@@ -2,6 +2,7 @@
 #include <vector>
 #include <random>
 #include <ctime>
+#include <iostream>
 
 #include "individual.h"
 #include "utils.h"

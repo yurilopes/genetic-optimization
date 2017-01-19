@@ -3,6 +3,7 @@
 #include <random>
 #include <ctime>
 #include <iostream>
+#include <limits.h>
 
 #include "individual.h"
 #include "utils.h"
@@ -17,6 +18,7 @@ class Population{
 
     public:
         Population(int32_t populationSize, int32_t individualSize, FitnessFunction fitFunction);
+        Population(int32_t populationSize, int32_t individualSize, int32_t minValue, int32_t maxValue, FitnessFunction fitFunction);
         ~Population();
         void printPopulation();
         void calculateFitness();
@@ -47,7 +49,15 @@ void Population::createPopulation(int32_t populationSize, int32_t individualSize
 Population::Population(int32_t populationSize, int32_t individualSize, FitnessFunction fitFunction){
 
     gen = new mt19937(static_cast<unsigned int>(std::time(0)));
-    disLong = new uniform_int_distribution<int32_t>(SHRT_MIN, SHRT_MAX); //(LONG_MIN, LONG_MAX);
+    disLong = new uniform_int_distribution<int32_t>(LONG_MIN, LONG_MAX);
+
+    createPopulation(populationSize, individualSize, fitFunction);
+}
+
+Population::Population(int32_t populationSize, int32_t individualSize, int32_t minValue, int32_t maxValue, FitnessFunction fitFunction){
+
+    gen = new mt19937(static_cast<unsigned int>(std::time(0)));
+    disLong = new uniform_int_distribution<int32_t>(minValue, maxValue); //(LONG_MIN, LONG_MAX);
 
     createPopulation(populationSize, individualSize, fitFunction);
 }

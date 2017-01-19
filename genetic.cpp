@@ -1,9 +1,9 @@
 //Comment this line below if running in Visual Studio
-#include "stdafx.h"
+//#include "stdafx.h"
 
 using namespace std;
 
-#include "genetic_operations.h"
+#include "genetic-algorithm.h"
 #include "population.h"
 
 
@@ -21,7 +21,7 @@ int main(){
     Each individual is vector of ints
     Each problem variable is a int
     */
-    Population population(2, 3, fitnessFunction);
+    Population population(2, 3, SHRT_MIN, SHRT_MAX, fitnessFunction);
     population.calculateFitness();
     population.printPopulation();
 

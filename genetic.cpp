@@ -24,7 +24,7 @@ int main(){
     Each problem variable/gene is an int
     */
     Population population(SHRT_MIN, SHRT_MAX);
-    population.initialize(2, 3, fitnessFunction);
+    population.initialize(30, 3, fitnessFunction);
     population.calculateFitness();
     population.printPopulation();
 

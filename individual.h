@@ -14,6 +14,8 @@ class Individual{
         vector<int32_t>* getIndividual();
         void calculateFitness();
         int32_t getFitness();
+
+        static bool compare(Individual *ind0, Individual *ind1);
 };
 
 
@@ -38,3 +40,11 @@ int32_t Individual::getFitness(){
 void Individual::calculateFitness(){
     fitness=fitnessFunction(individual);
 }
+
+bool Individual::compare(Individual *ind0, Individual *ind1){
+    /*
+    Minimization of the fitness function is implied here
+    */
+    return ind0->getFitness() < ind1->getFitness();
+}
+

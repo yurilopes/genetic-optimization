@@ -65,9 +65,11 @@ void Population::printPopulation(){
     }
 }
 
+
 void Population::calculateFitness(){
     for(list<Individual*>::iterator itr = population.begin(); itr!=population.end(); itr++){
         Individual *individual = *itr;
         individual->calculateFitness();
     }
+    population.sort( Individual::compare );
 }

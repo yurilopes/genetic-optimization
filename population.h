@@ -12,16 +12,15 @@ class Population{
     protected:
         list<Individual*> population;
         mt19937 *gen;
-        uniform_int_distribution<int32_t> *disLong;
+        uniform_int_distribution<int32_t> *dis;
         int32_t random();
-        void createPopulation(int32_t populationSize, int32_t individualSize, FitnessFunction fitFunction);
 
     public:
-        Population(int32_t populationSize, int32_t individualSize, FitnessFunction fitFunction);
-        Population(int32_t populationSize, int32_t individualSize, int32_t minValue, int32_t maxValue, FitnessFunction fitFunction);
+        Population(int32_t minGeneValue, int32_t maxGeneValue);
         ~Population();
         void printPopulation();
         void calculateFitness();
+        void initialize(int32_t populationSize, int32_t individualSize, FitnessFunction fitFunction);
 
 };
 
@@ -33,10 +32,10 @@ Population::~Population(){
 }
 
 int32_t Population::random(){
-    return (*disLong)((*gen));
+    return (*dis)((*gen));
 }
 
-void Population::createPopulation(int32_t populationSize, int32_t individualSize, FitnessFunction fitFunction){
+void Population::initialize(int32_t populationSize, int32_t individualSize, FitnessFunction fitFunction){
     for(int32_t i=0; i<populationSize; i++){
         Individual *individual = new Individual(individualSize, fitFunction);
         for(int32_t j=0; j<individualSize; j++){
@@ -46,20 +45,11 @@ void Population::createPopulation(int32_t populationSize, int32_t individualSize
     }
 }
 
-Population::Population(int32_t populationSize, int32_t individualSize, FitnessFunction fitFunction){
+Population::Population(int32_t minGeneValue, int32_t maxGeneValue){
 
     gen = new mt19937(static_cast<unsigned int>(std::time(0)));
-    disLong = new uniform_int_distribution<int32_t>(LONG_MIN, LONG_MAX);
+    dis = new uniform_int_distribution<int32_t>(minGeneValue, maxGeneValue);
 
-    createPopulation(populationSize, individualSize, fitFunction);
-}
-
-Population::Population(int32_t populationSize, int32_t individualSize, int32_t minValue, int32_t maxValue, FitnessFunction fitFunction){
-
-    gen = new mt19937(static_cast<unsigned int>(std::time(0)));
-    disLong = new uniform_int_distribution<int32_t>(minValue, maxValue); //(LONG_MIN, LONG_MAX);
-
-    createPopulation(populationSize, individualSize, fitFunction);
 }
 
 

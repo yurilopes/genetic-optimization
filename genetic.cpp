@@ -1,6 +1,8 @@
 //Comment this line below if running in Visual Studio
 //#include "stdafx.h"
 
+#include <limits.h>
+
 using namespace std;
 
 #include "genetic-algorithm.h"
@@ -17,11 +19,12 @@ int32_t fitnessFunction(vector<int32_t> *variables){
 
 int main(){
     /*
-    A population is list of a lisf of individuals
+    A population is list of individuals
     Each individual is vector of ints
-    Each problem variable is a int
+    Each problem variable/gene is an int
     */
-    Population population(2, 3, SHRT_MIN, SHRT_MAX, fitnessFunction);
+    Population population(SHRT_MIN, SHRT_MAX);
+    population.initialize(2, 3, fitnessFunction);
     population.calculateFitness();
     population.printPopulation();
 

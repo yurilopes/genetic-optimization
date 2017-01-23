@@ -4,12 +4,117 @@
 #include <random>
 #include <ctime>
 
-//mt19937 gen(static_cast<unsigned int>(std::time(0)));
-//uniform_int_distribution<int32_t> disLong(LONG_MIN, LONG_MAX);
-//uniform_int_distribution<int32_t> disBin(0, 1);
+#include "population.h"
 
-//#define random() disLong(gen)
-#define randomBinary() 0//disBin(gen)
+mt19937 gen0_1(static_cast<unsigned int>(std::time(0)));
+uniform_real_distribution<float> disR0_1(0.0, 1.0);
+
+#define randomReal() disR0_1(gen0_1)
+#define randomBinary() 0
+
+class GeneticAlgorithm {
+	public:
+		static void selectionRoulette(Population &pop);
+		static Population* generateMatingPool(Population &pop);
+
+	protected:
+		static Individual * getFirstIndividualMatingRoulette(Population &pop, float probability);
+		static Individual * getSecondIndividualMatingRoulette(Population &pop, Individual * ind0, float probability);
+		
+
+};
+
+
+void GeneticAlgorithm::selectionRoulette(Population &pop) {
+	int32_t total = 0, lowest, current;
+	float accumulatedNormFit = 0.0;
+
+	list<Individual*>* population = pop.getIndividualList();
+
+	/*
+	Calculate the lowest fitness value
+	This is used to translate every fitness value to a positive range
+	*/
+	for (list<Individual*>::iterator itr = population->begin(); itr != population->end(); itr++) {
+		Individual *individual = *itr;
+		current = individual->getFitness();
+		if (itr == population->begin()) //Lowest = fitness of the first iteration
+			lowest = current;
+		if (current < lowest)
+			lowest = current;
+	}
+
+	/*
+	1 is added to the lowest value so that the worst individual can actually have a nonzero chance of mating
+	*/
+	lowest *= -1;
+	lowest++;
+
+	/*
+	Redefine the fitness for each individual
+	and calculate the total sum of fitness
+	*/
+	for (list<Individual*>::iterator itr = population->begin(); itr != population->end(); itr++) {
+		Individual *individual = *itr;
+		total += individual->addToFitness(lowest);
+	}
+
+	/*
+	Calculate the normalized fitness for each individual
+	*/
+	for (list<Individual*>::iterator itr = population->begin(); itr != population->end(); itr++) {
+		Individual *individual = *itr;
+		accumulatedNormFit += ((float)individual->getFitness() / (float)total);		
+		individual->setAccNormalizedFitness(accumulatedNormFit);
+	}
+
+}
+
+Population* GeneticAlgorithm::generateMatingPool(Population & pop)
+{
+	Population *matingPopulation = new Population(0, 0); //Seeding values aren't important	
+
+	int populationSize = pop.getIndividualList()->size();
+
+	for (int i = 0; i < populationSize; i += 2) {
+		Individual *ind0 = getFirstIndividualMatingRoulette(pop, randomReal());
+		Individual *ind1 = getSecondIndividualMatingRoulette(pop, ind0, randomReal());
+		matingPopulation->getIndividualList()->push_back(ind0);
+		matingPopulation->getIndividualList()->push_back(ind1);
+	}
+
+	return matingPopulation;
+}
+
+inline Individual * GeneticAlgorithm::getFirstIndividualMatingRoulette(Population & pop, float probability)
+{
+	list<Individual*>* population = pop.getIndividualList();
+
+	for (list<Individual*>::iterator itr = population->begin(); itr != population->end(); itr++) {
+		Individual *individual = *itr;
+		if (individual->getAccNormalizedFitness() >= probability)
+			return individual;			
+	}
+
+	return pop.getFittestIndividual();
+}
+
+inline Individual * GeneticAlgorithm::getSecondIndividualMatingRoulette(Population & pop, Individual * ind0, float probability)
+{
+	list<Individual*>* population = pop.getIndividualList();
+
+	for (list<Individual*>::iterator itr = population->begin(); itr != population->end(); itr++) {
+		Individual *individual = *itr;
+		if ((individual->getAccNormalizedFitness() >= probability) && (individual != pop.getFittestIndividual()))
+			return individual;
+	}
+
+	if ((ind0 != pop.getFittestIndividual()))
+		return pop.getFittestIndividual();
+	else
+		return (*(std::next(population->begin()))); //Second element in list
+}
+
 
 
 void crossOver(vector<int32_t> &parentX, vector<int32_t> &parentY){

@@ -6,7 +6,6 @@
 using namespace std;
 
 #include "genetic-algorithm.h"
-#include "population.h"
 
 
 int32_t fitnessFunction(vector<int32_t> *variables){
@@ -25,10 +24,13 @@ int main(){
     */
     //Population population(LONG_MIN, LONG_MAX);
 	Population population(-5, 5);
-    population.initialize(5, 3, fitnessFunction);
+    population.initialize(6, 3, fitnessFunction);
     population.calculateFitness();
-	population.calculateSelection();
+	GeneticAlgorithm::selectionRoulette(population);
 	population.printPopulation();
+	cout << endl;
+	cout << "Mating Pool:" << endl;	
+	GeneticAlgorithm::generateMatingPool(population)->printPopulation();	
 
     return 0;
 }

@@ -6,7 +6,7 @@ class Individual{
     protected:
         vector<int32_t> *individual;
         int32_t         fitness;
-		float			normalizedFitness;
+		float			accNormalizedFitness;
         FitnessFunction fitnessFunction;
 
     public:
@@ -16,8 +16,8 @@ class Individual{
 		int32_t calculateFitness();
 		int32_t addToFitness(int32_t value);
         int32_t getFitness();
-		float getNormalizedFitness();
-		void setNormalizedFitness(float fit);
+		float getAccNormalizedFitness();
+		void setAccNormalizedFitness(float fit);
 
         static bool compare(Individual *ind0, Individual *ind1);
 };
@@ -26,7 +26,7 @@ class Individual{
 Individual::Individual(int32_t indSize, FitnessFunction fitFunction){
     individual = new vector<int32_t>(indSize);
     fitness = 0;
-	normalizedFitness = 0.0;
+	accNormalizedFitness = 0.0;
     fitnessFunction = fitFunction;
 }
 
@@ -42,13 +42,13 @@ int32_t Individual::getFitness(){
     return fitness;
 }
 
-float Individual::getNormalizedFitness() {
-	return normalizedFitness;
+float Individual::getAccNormalizedFitness() {
+	return accNormalizedFitness;
 }
 
-void Individual::setNormalizedFitness(float fit)
+void Individual::setAccNormalizedFitness(float fit)
 {
-	normalizedFitness = fit;
+	accNormalizedFitness = fit;
 }
 
 int32_t Individual::calculateFitness(){

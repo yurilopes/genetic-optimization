@@ -1,5 +1,5 @@
 //Comment this line below if running in Visual Studio
-//#include "stdafx.h"
+#include "stdafx.h"
 
 #include <limits.h>
 
@@ -23,13 +23,12 @@ int main(){
     Each individual is vector of ints
     Each problem variable/gene is an int
     */
-    Population population(SHRT_MIN, SHRT_MAX);
-    population.initialize(30, 3, fitnessFunction);
+    //Population population(LONG_MIN, LONG_MAX);
+	Population population(-5, 5);
+    population.initialize(5, 3, fitnessFunction);
     population.calculateFitness();
-    population.printPopulation();
-
-	system("pause");
-
+	population.calculateSelection();
+	population.printPopulation();
 
     return 0;
 }

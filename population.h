@@ -20,6 +20,7 @@ class Population{
         ~Population();
         void printPopulation();
         void calculateFitness();
+		void calculateSelection();
         void initialize(int32_t populationSize, int32_t individualSize, FitnessFunction fitFunction);
 
 };
@@ -60,16 +61,64 @@ void Population::printPopulation(){
             cout<<*it;
             cout<<", ";
         }
-        cout<<"F="<<individual->getFitness();
+        cout << "F=" << individual->getFitness();
+		cout << ", FN=" << individual->getNormalizedFitness();
         cout<<endl;
     }
 }
 
 
-void Population::calculateFitness(){
+void Population::calculateFitness(){	
+	/*
+	Calculate fitness values for each individual
+	*/
     for(list<Individual*>::iterator itr = population.begin(); itr!=population.end(); itr++){
         Individual *individual = *itr;
         individual->calculateFitness();
     }
+
     population.sort( Individual::compare );
+}
+
+
+void Population::calculateSelection() {
+	int32_t total = 0, lowest, current;
+	/*
+	Calculate the lowest fitness value
+	This is used to translate every fitness value to a positive range
+	*/
+	for (list<Individual*>::iterator itr = population.begin(); itr != population.end(); itr++) {
+		Individual *individual = *itr;
+		current = individual->getFitness();
+		if (itr == population.begin()) //Lowest = fitness of the first iteration
+			lowest = current;
+		if (current < lowest)
+			lowest = current;
+	}	
+
+	/*
+	1 is added to the lowest value so that the worst individual can actually have a nonzero chance of mating
+	*/
+	lowest *= -1;
+	lowest++;
+
+	/*
+	Redefine the fitness for each individual
+	and calculate the total sum of fitness
+	*/
+	for (list<Individual*>::iterator itr = population.begin(); itr != population.end(); itr++) {
+		Individual *individual = *itr;
+		total+=individual->addToFitness(lowest);
+	}
+
+	/*
+	Calculate the normalized fitness for each individual
+	*/
+	for (list<Individual*>::iterator itr = population.begin(); itr != population.end(); itr++) {
+		Individual *individual = *itr;
+		individual->setNormalizedFitness((float)individual->getFitness() / (float)total);
+	}
+
+	
+
 }

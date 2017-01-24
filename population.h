@@ -3,6 +3,7 @@
 #include <random>
 #include <ctime>
 #include <iostream>
+#include <iomanip>
 #include <algorithm>
 
 #include "individual.h"
@@ -92,12 +93,12 @@ void Population::printPopulation(){
 	uint32_t i = 0;
     for(vector<Individual*>::iterator itr = population.begin(); itr!=population.end(); itr++){
         Individual *individual = *itr;
-		cout << i << ": \t";
+		cout << i << ": ";
         for(vector<int32_t>::iterator it = individual->getIndividual()->begin(); it!=individual->getIndividual()->end(); it++){
-            cout<<*it;
-            cout<<", ";
+            cout << setw(6) << *it;
+            cout << ", \t";
         }
-        cout << "\tF=" << individual->getFitness();
+        cout << "F=" << individual->getFitness();
 		cout << "\t, FN=" << individual->getAccNormalizedFitness();
         cout<<endl;
 		i++;

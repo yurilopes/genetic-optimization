@@ -13,6 +13,7 @@ class Individual{
         Individual(int32_t indSize, FitnessFunction fitFunction);
         ~Individual();
         vector<int32_t>* getIndividual();
+		void setIndividual(vector<int32_t>* ind);
 		int32_t calculateFitness();
 		int32_t addToFitness(int32_t value);
         int32_t getFitness();
@@ -37,6 +38,11 @@ Individual::~Individual(){
 
 vector<int32_t>* Individual::getIndividual(){
     return individual;
+}
+
+inline void Individual::setIndividual(vector<int32_t>* ind)
+{
+	individual = ind;
 }
 
 int32_t Individual::getFitness(){

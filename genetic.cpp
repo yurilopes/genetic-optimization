@@ -18,21 +18,28 @@ int32_t fitnessFunction(vector<int32_t> *variables){
 
 int main(){
     /*
-    A population is list of individuals
+    A population is vector of individuals
     Each individual is vector of ints
     Each problem variable/gene is an int
     */
 	GeneticAlgorithm ga;
-	ga.setElitism(false);
-	ga.setMinSeed(-5);
-	ga.setMaxSeed(5);
+
+	ga.setElitism(true);	
+	ga.setMinSeed(0);
+	ga.setMaxSeed(0xFF);
 	ga.setFitnessFunction(fitnessFunction);
-	ga.initializePopulation(6, 3);
+
+	ga.initializePopulation(8, 3);
+
 	ga.calculateFitness();			
 	ga.selectionRoulette();
-	ga.printPopulation();
+	cout << "Population: " << endl;
+	ga.printPopulation();	
+	ga.generateRouletteMatingPool();	
+	
+	ga.crossOver();
 	cout << "------------------" << endl;
-	ga.generateRouletteMatingPool();
+	cout << "New population" << endl;
 	ga.printMatingPool();
 
     return 0;

@@ -1,16 +1,16 @@
-#include <list>
+#include <vector>
 #include <vector>
 #include <random>
 #include <ctime>
 #include <iostream>
-#include <limits.h>
+#include <algorithm>
 
 #include "individual.h"
 #include "utils.h"
 
 class Population{
     protected:
-        list<Individual*> population;
+        vector<Individual*> population;
         mt19937 *gen;
         uniform_int_distribution<int32_t> *dis;
         int32_t random();
@@ -21,12 +21,12 @@ class Population{
         void printPopulation();
         void calculateFitness();		
         void initialize(int32_t populationSize, int32_t individualSize, FitnessFunction fitFunction);
-		list<Individual*>* getIndividualList();
+		vector<Individual*>* getIndividualVector();
 		Individual * getFittestIndividual();
 
 };
 
-list<Individual*>* Population::getIndividualList() {
+vector<Individual*>* Population::getIndividualVector() {
 	return &population;
 }
 
@@ -36,7 +36,7 @@ inline Individual * Population::getFittestIndividual()
 }
 
 Population::~Population(){
-    for(list<Individual*>::iterator itr = population.begin(); itr!=population.end(); itr++){
+    for(vector<Individual*>::iterator itr = population.begin(); itr!=population.end(); itr++){
         Individual *individual = *itr;
         delete individual;
     }
@@ -65,7 +65,7 @@ Population::Population(int32_t minGeneValue, int32_t maxGeneValue){
 
 
 void Population::printPopulation(){
-    for(list<Individual*>::iterator itr = population.begin(); itr!=population.end(); itr++){
+    for(vector<Individual*>::iterator itr = population.begin(); itr!=population.end(); itr++){
         Individual *individual = *itr;
         for(vector<int32_t>::iterator it = individual->getIndividual()->begin(); it!=individual->getIndividual()->end(); it++){
             cout<<*it;
@@ -82,10 +82,10 @@ void Population::calculateFitness(){
 	/*
 	Calculate fitness values for each individual
 	*/
-    for(list<Individual*>::iterator itr = population.begin(); itr!=population.end(); itr++){
+    for(vector<Individual*>::iterator itr = population.begin(); itr!=population.end(); itr++){
         Individual *individual = *itr;
         individual->calculateFitness();
     }
 
-    population.sort( Individual::compare );
+    sort(population.begin(), population.end(), Individual::compare);
 }

@@ -4,6 +4,7 @@
 #include <random>
 #include <ctime>
 #include <limits>
+#include <Windows.h>
 
 #include "population.h"
 
@@ -95,12 +96,14 @@ inline void GeneticAlgorithm::selectionRoulette() {
 
 }
 
-inline void GeneticAlgorithm::generateRouletteMatingPool()
+void GeneticAlgorithm::generateRouletteMatingPool()
 {
+	Sleep(100);
 	if (gMatingPool != NULL)
 		delete gMatingPool;
-
-	gMatingPool = new Population(0, 0); //Seeding values aren't important
+		
+	gMatingPool = new Population(0, 5); //Seeding values aren't important
+	gMatingPool->setMainPopulation(false); //The destructor won't try to free invalid Individual pointers
 
 	unsigned int popSize = gPopulation->getIndividualVector()->size();
 	uint32_t size = popSize;
@@ -109,40 +112,30 @@ inline void GeneticAlgorithm::generateRouletteMatingPool()
 		return;
 
 
-	//vector<Individual*>* population = gPopulation->getIndividualVector();	
-	/*
+	vector<Individual*>* population = gPopulation->getIndividualVector();	
+	
 	if (elitism) {
 		uint32_t i = 0;
-		for (vector<Individual*>::iterator itr = population->begin(); itr != population->end(); itr++) {
+		for (vector<Individual*>::iterator itr = population->begin(); itr != population->end(); itr++) {			
 			Individual *individual = *itr;
-			gMatingPool->getIndividualVector()->push_back(individual);
-			cout << i << endl;
-			i++;
+
 			if (i >= eliteAmout)
 				break;
+
+			gMatingPool->getIndividualVector()->push_back(individual);							
+			i++;
 		}
 		size -= eliteAmout;
 	}
-	*/
-
-	cout << "Elite ok" << endl;
-
-	//return;
-
-
-
+	
 	for (uint32_t i = 0; i < size; i += 2) {
 		Individual *ind0 = getFirstIndividualMatingRoulette(gPopulation, randomReal());
-		Individual *ind1 = getSecondIndividualMatingRoulette(gPopulation, ind0, randomReal());
-		gMatingPool->getIndividualVector()->push_back(ind0);
+		Individual *ind1 = getSecondIndividualMatingRoulette(gPopulation, ind0, randomReal());		
+		gMatingPool->getIndividualVector()->push_back(ind0);		
+		if (gMatingPool->getIndividualVector()->size() >= popSize)
+			break;
 		gMatingPool->getIndividualVector()->push_back(ind1);
-	}
-	/*
-	while (gMatingPool->getIndividualVector()->size() < popSize) {
-		cout << "Here" << endl;
-		Individual *ind0 = getFirstIndividualMatingRoulette(gPopulation, randomReal());
-		gMatingPool->getIndividualVector()->push_back(ind0);
-	}*/
+	}	
 
 }
 

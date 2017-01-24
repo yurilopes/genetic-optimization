@@ -3,7 +3,7 @@
 
 #include <limits.h>
 
-using namespace std;
+using namespace std; 
 
 #include "genetic-algorithm.h"
 
@@ -23,7 +23,7 @@ int main(){
     Each problem variable/gene is an int
     */
 	GeneticAlgorithm ga;
-	ga.setElitism(true);
+	ga.setElitism(false);
 	ga.setMinSeed(-5);
 	ga.setMaxSeed(5);
 	ga.setFitnessFunction(fitnessFunction);

@@ -16,6 +16,7 @@ class Individual{
 		int32_t calculateFitness();
 		int32_t addToFitness(int32_t value);
         int32_t getFitness();
+		void setFitnessFunction(FitnessFunction fitFunc);
 		float getAccNormalizedFitness();
 		void setAccNormalizedFitness(float fit);
 
@@ -40,6 +41,11 @@ vector<int32_t>* Individual::getIndividual(){
 
 int32_t Individual::getFitness(){
     return fitness;
+}
+
+inline void Individual::setFitnessFunction(FitnessFunction fitFunc)
+{
+	fitnessFunction = fitFunc;
 }
 
 float Individual::getAccNormalizedFitness() {

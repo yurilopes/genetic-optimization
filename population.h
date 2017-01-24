@@ -14,15 +14,17 @@ class Population{
         mt19937 *gen;
         uniform_int_distribution<int32_t> *dis;
         int32_t random();
+		
 
     public:
-        Population(int32_t minGeneValue, int32_t maxGeneValue);
+        Population(int32_t minSeed, int32_t maxSeed);
         ~Population();
         void printPopulation();
         void calculateFitness();		
-        void initialize(int32_t populationSize, int32_t individualSize, FitnessFunction fitFunction);
+        void initialize(uint32_t populationSize, uint32_t individualSize, FitnessFunction fitFunction);
 		vector<Individual*>* getIndividualVector();
 		Individual * getFittestIndividual();
+		void refreshFitnessFunction(FitnessFunction func);
 
 };
 
@@ -33,6 +35,14 @@ vector<Individual*>* Population::getIndividualVector() {
 inline Individual * Population::getFittestIndividual()
 {
 	return population.front();
+}
+
+inline void Population::refreshFitnessFunction(FitnessFunction func)
+{
+	for (vector<Individual*>::iterator itr = population.begin(); itr != population.end(); itr++) {
+		Individual *individual = *itr;
+		individual->setFitnessFunction(func);
+	}
 }
 
 Population::~Population(){
@@ -46,20 +56,20 @@ int32_t Population::random(){
     return (*dis)((*gen));
 }
 
-void Population::initialize(int32_t populationSize, int32_t individualSize, FitnessFunction fitFunction){
-    for(int32_t i=0; i<populationSize; i++){
+void Population::initialize(uint32_t populationSize, uint32_t individualSize, FitnessFunction fitFunction){
+    for(uint32_t i=0; i<populationSize; i++){
         Individual *individual = new Individual(individualSize, fitFunction);
-        for(int32_t j=0; j<individualSize; j++){
+        for(uint32_t j=0; j<individualSize; j++){
             (* individual->getIndividual())[j]=random();
         }
         population.push_back(individual);
     }
 }
 
-Population::Population(int32_t minGeneValue, int32_t maxGeneValue){
+Population::Population(int32_t minSeed, int32_t maxSeed){
 
     gen = new mt19937(static_cast<unsigned int>(std::time(0)));
-    dis = new uniform_int_distribution<int32_t>(minGeneValue, maxGeneValue);
+    dis = new uniform_int_distribution<int32_t>(minSeed, maxSeed);
 
 }
 

@@ -3,6 +3,7 @@
 #include <bitset>
 #include <random>
 #include <ctime>
+#include <limits>
 
 #include "population.h"
 
@@ -13,25 +14,47 @@ uniform_real_distribution<float> disR0_1(0.0, 1.0);
 #define randomBinary() 0
 
 class GeneticAlgorithm {
-	//Population *population;
-
 	public:
-		static void selectionRoulette(Population &pop);
-		static Population* generateMatingPool(Population &pop);
+		int32_t	getMinSeed();
+		void	setMinSeed(int32_t mSeed);
+		int32_t	getMaxSeed();
+		void	setMaxSeed(int32_t mSeed);
+		uint32_t getIndividualSize();
+		uint32_t getPopulationSize();		
+		void	setFitnessFunction(FitnessFunction fitFunc);
+		FitnessFunction getFitnessFunction();
+		void	initializePopulation(uint32_t populationSize, uint32_t individualSize);
+		void	calculateFitness();
+		void	printPopulation();		
+		void	refreshFitnessFunction();
+		void	setElitism(bool elit);
+		bool	getElitism();
+		void	setEliteAmount(uint32_t amount);
+		uint32_t	getEliteAmount();
+		void	printMatingPool();
+
+		void selectionRoulette();
+		void generateRouletteMatingPool();
+
+		~GeneticAlgorithm();
 
 	protected:
-		static Individual * getFirstIndividualMatingRoulette(Population &pop, float probability);
-		static Individual * getSecondIndividualMatingRoulette(Population &pop, Individual * ind0, float probability);
-		
+		Population * gPopulation = NULL, * gMatingPool = NULL;
+		int32_t minSeed = LONG_MIN, maxSeed = LONG_MAX;
+		uint32_t populationSize = 0 , individualSize = 0;
+		FitnessFunction fitnessFunc = NULL;		
+		bool elitism = true;
+		uint32_t eliteAmout = 1;
 
+		static Individual * getFirstIndividualMatingRoulette(Population * pop, float probability);
+		static Individual * getSecondIndividualMatingRoulette(Population * pop, Individual * ind0, float probability);
 };
 
-
-void GeneticAlgorithm::selectionRoulette(Population &pop) {
+inline void GeneticAlgorithm::selectionRoulette() {
 	int32_t total = 0, lowest, current;
 	float accumulatedNormFit = 0.0;
 
-	vector<Individual*>* population = pop.getIndividualVector();
+	vector<Individual*>* population = gPopulation->getIndividualVector();
 
 	/*
 	Calculate the lowest fitness value
@@ -72,25 +95,166 @@ void GeneticAlgorithm::selectionRoulette(Population &pop) {
 
 }
 
-Population* GeneticAlgorithm::generateMatingPool(Population & pop)
+inline void GeneticAlgorithm::generateRouletteMatingPool()
 {
-	Population *matingPopulation = new Population(0, 0); //Seeding values aren't important	
+	if (gMatingPool != NULL)
+		delete gMatingPool;
 
-	int populationSize = pop.getIndividualVector()->size();
+	gMatingPool = new Population(0, 0); //Seeding values aren't important
 
-	for (int i = 0; i < populationSize; i += 2) {
-		Individual *ind0 = getFirstIndividualMatingRoulette(pop, randomReal());
-		Individual *ind1 = getSecondIndividualMatingRoulette(pop, ind0, randomReal());
-		matingPopulation->getIndividualVector()->push_back(ind0);
-		matingPopulation->getIndividualVector()->push_back(ind1);
+	unsigned int popSize = gPopulation->getIndividualVector()->size();
+	uint32_t size = popSize;
+
+	if (eliteAmout > popSize)
+		return;
+
+
+	//vector<Individual*>* population = gPopulation->getIndividualVector();	
+	/*
+	if (elitism) {
+		uint32_t i = 0;
+		for (vector<Individual*>::iterator itr = population->begin(); itr != population->end(); itr++) {
+			Individual *individual = *itr;
+			gMatingPool->getIndividualVector()->push_back(individual);
+			cout << i << endl;
+			i++;
+			if (i >= eliteAmout)
+				break;
+		}
+		size -= eliteAmout;
 	}
+	*/
 
-	return matingPopulation;
+	cout << "Elite ok" << endl;
+
+	//return;
+
+
+
+	for (uint32_t i = 0; i < size; i += 2) {
+		Individual *ind0 = getFirstIndividualMatingRoulette(gPopulation, randomReal());
+		Individual *ind1 = getSecondIndividualMatingRoulette(gPopulation, ind0, randomReal());
+		gMatingPool->getIndividualVector()->push_back(ind0);
+		gMatingPool->getIndividualVector()->push_back(ind1);
+	}
+	/*
+	while (gMatingPool->getIndividualVector()->size() < popSize) {
+		cout << "Here" << endl;
+		Individual *ind0 = getFirstIndividualMatingRoulette(gPopulation, randomReal());
+		gMatingPool->getIndividualVector()->push_back(ind0);
+	}*/
+
 }
 
-inline Individual * GeneticAlgorithm::getFirstIndividualMatingRoulette(Population & pop, float probability)
+inline GeneticAlgorithm::~GeneticAlgorithm()
 {
-	vector<Individual*>* population = pop.getIndividualVector();
+	if (gPopulation != NULL)
+		delete gPopulation;
+	if (gMatingPool != NULL)
+		delete gMatingPool;	
+}
+
+
+inline int32_t GeneticAlgorithm::getMinSeed()
+{
+	return minSeed;
+}
+
+inline void GeneticAlgorithm::setMinSeed(int32_t mSeed)
+{
+	minSeed = mSeed;
+}
+
+inline int32_t GeneticAlgorithm::getMaxSeed()
+{
+	return maxSeed;
+}
+
+inline uint32_t GeneticAlgorithm::getIndividualSize()
+{
+	return individualSize;
+}
+
+inline uint32_t GeneticAlgorithm::getPopulationSize()
+{
+	return populationSize;
+}
+
+inline void GeneticAlgorithm::setFitnessFunction(FitnessFunction fitFunc)
+{
+	fitnessFunc = fitFunc;
+}
+
+inline FitnessFunction GeneticAlgorithm::getFitnessFunction()
+{
+	return fitnessFunc;
+}
+
+inline void GeneticAlgorithm::initializePopulation(uint32_t populationSize, uint32_t individualSize)
+{
+	if (gPopulation != NULL)
+		delete gPopulation;
+
+	gPopulation = new Population(minSeed, maxSeed);
+
+	if (fitnessFunc != NULL)
+		gPopulation->initialize(populationSize, individualSize, fitnessFunc);
+}
+
+inline void GeneticAlgorithm::setMaxSeed(int32_t mSeed)
+{
+	maxSeed = mSeed;
+}
+
+inline void GeneticAlgorithm::calculateFitness()
+{
+	if (gPopulation != NULL)
+		gPopulation->calculateFitness();
+}
+
+inline void GeneticAlgorithm::printPopulation()
+{
+	if (gPopulation != NULL)
+		gPopulation->printPopulation();
+}
+
+inline void GeneticAlgorithm::refreshFitnessFunction()
+{
+	if (gPopulation == NULL)
+		return;
+
+	gPopulation->refreshFitnessFunction(fitnessFunc);
+}
+
+inline void GeneticAlgorithm::setElitism(bool elit)
+{
+	elitism = elit;
+}
+
+inline bool GeneticAlgorithm::getElitism()
+{
+	return elitism;
+}
+
+inline void GeneticAlgorithm::setEliteAmount(uint32_t amount)
+{
+	eliteAmout = amount;
+}
+
+inline uint32_t GeneticAlgorithm::getEliteAmount()
+{
+	return eliteAmout;
+}
+
+inline void GeneticAlgorithm::printMatingPool()
+{
+	if (gMatingPool != NULL)
+		gMatingPool->printPopulation();
+}
+
+inline Individual * GeneticAlgorithm::getFirstIndividualMatingRoulette(Population * pop, float probability)
+{
+	vector<Individual*>* population = pop->getIndividualVector();
 
 	for (vector<Individual*>::iterator itr = population->begin(); itr != population->end(); itr++) {
 		Individual *individual = *itr;
@@ -98,21 +262,21 @@ inline Individual * GeneticAlgorithm::getFirstIndividualMatingRoulette(Populatio
 			return individual;			
 	}
 
-	return pop.getFittestIndividual();
+	return pop->getFittestIndividual();
 }
 
-inline Individual * GeneticAlgorithm::getSecondIndividualMatingRoulette(Population & pop, Individual * ind0, float probability)
+inline Individual * GeneticAlgorithm::getSecondIndividualMatingRoulette(Population * pop, Individual * ind0, float probability)
 {
-	vector<Individual*>* population = pop.getIndividualVector();
+	vector<Individual*>* population = pop->getIndividualVector();
 
 	for (vector<Individual*>::iterator itr = population->begin(); itr != population->end(); itr++) {
 		Individual *individual = *itr;
-		if ((individual->getAccNormalizedFitness() >= probability) && (individual != pop.getFittestIndividual()))
+		if ((individual->getAccNormalizedFitness() >= probability) && (individual != pop->getFittestIndividual()))
 			return individual;
 	}
 
-	if ((ind0 != pop.getFittestIndividual()))
-		return pop.getFittestIndividual();
+	if ((ind0 != pop->getFittestIndividual()))
+		return pop->getFittestIndividual();
 	else
 		return (*(std::next(population->begin()))); //Second element in list
 }

@@ -22,15 +22,18 @@ int main(){
     Each individual is vector of ints
     Each problem variable/gene is an int
     */
-    //Population population(LONG_MIN, LONG_MAX);
-	Population population(-5, 5);
-    population.initialize(6, 3, fitnessFunction);
-    population.calculateFitness();
-	GeneticAlgorithm::selectionRoulette(population);
-	population.printPopulation();
-	cout << endl;
-	cout << "Mating Pool:" << endl;	
-	GeneticAlgorithm::generateMatingPool(population)->printPopulation();	
+	GeneticAlgorithm ga;
+	ga.setElitism(true);
+	ga.setMinSeed(-5);
+	ga.setMaxSeed(5);
+	ga.setFitnessFunction(fitnessFunction);
+	ga.initializePopulation(6, 3);
+	ga.calculateFitness();			
+	ga.selectionRoulette();
+	ga.printPopulation();
+	cout << "------------------" << endl;
+	ga.generateRouletteMatingPool();
+	ga.printMatingPool();
 
     return 0;
 }

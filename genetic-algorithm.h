@@ -362,12 +362,23 @@ inline Individual * GeneticAlgorithm::getSecondIndividualMatingRoulette(Populati
 		}
 	}
 
+
+
 	//ind0 = last individual
 	//probability is high enough to only select the last individual
+
+	uniform_int_distribution<int32_t> dis(0, pop->getIndividualVector()->size()-2);
+
+	return (*pop->getIndividualVector())[dis(genGA)]; //The last will always mate with any other Individual
+
+	/*
+	The below recursive call has been remove for a while
+	Convergence made it be called too many times
+	*/
 	//Choose another member of population via the same process
 	//This will eventually not call itself
-	//This could eventually cause a stack overflow, however very rare
-	return getSecondIndividualMatingRoulette(pop, ind0, randomReal());
+	//This could eventually cause a stack overflow, however very rare		
+	//return getSecondIndividualMatingRoulette(pop, ind0, randomReal());
 
 }
 

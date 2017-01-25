@@ -28,18 +28,22 @@ class GeneticAlgorithm {
 		void	initializePopulation(uint32_t populationSize, uint32_t individualSize);
 		void	calculateFitness();
 		void	printPopulation();		
+		void	printFittestIndividual();
 		void	refreshFitnessFunction();
 		void	setElitism(bool elit);
 		bool	getElitism();
 		void	setEliteAmount(uint32_t amount);
 		uint32_t	getEliteAmount();
 		void	printMatingPool();
+		Individual * getFittestIndividual();
 
 		void selectionRoulette();
 		void generateRouletteMatingPool();
 		void crossOver();
 
-		~GeneticAlgorithm();
+		static int32_t getVariable(vector<int32_t> *variables, uint32_t position);
+
+		~GeneticAlgorithm();		
 
 	protected:
 		Population * gPopulation = NULL, * gMatingPool = NULL;
@@ -49,9 +53,9 @@ class GeneticAlgorithm {
 		bool elitism = true;
 		uint32_t eliteAmout = 1;
 		
-		static void crossOverIndividualInt32(Individual * parentX, Individual * parentY);
+		static void crossOverIndividualInt32(Individual * parentX, Individual * parentY, Individual * childXP, Individual * childYP);
 		static Individual * getFirstIndividualMatingRoulette(Population * pop, float probability);
-		static Individual * getSecondIndividualMatingRoulette(Population * pop, Individual * ind0, float probability);
+		static Individual * getSecondIndividualMatingRoulette(Population * pop, Individual * ind0, float probability);		
 };
 
 inline void GeneticAlgorithm::selectionRoulette() {
@@ -76,7 +80,8 @@ inline void GeneticAlgorithm::selectionRoulette() {
 	/*
 	1 is added to the lowest value so that the worst individual can actually have a nonzero chance of mating
 	*/
-	lowest *= -1;
+	if(lowest < 0)
+		lowest *= -1;
 	lowest++;
 
 	/*
@@ -85,7 +90,7 @@ inline void GeneticAlgorithm::selectionRoulette() {
 	*/
 	for (vector<Individual*>::iterator itr = population->begin(); itr != population->end(); itr++) {
 		Individual *individual = *itr;
-		total += individual->addToFitness(lowest);
+		total += individual->addToAccFitness(lowest);
 	}
 
 	/*
@@ -93,20 +98,19 @@ inline void GeneticAlgorithm::selectionRoulette() {
 	*/
 	for (vector<Individual*>::iterator itr = population->begin(); itr != population->end(); itr++) {
 		Individual *individual = *itr;
-		accumulatedNormFit += ((float)individual->getFitness() / (float)total);		
+		accumulatedNormFit += ((float)individual->getAccFitness() / (float)total);		
 		individual->setAccNormalizedFitness(accumulatedNormFit);
 	}
 
 }
 
-void GeneticAlgorithm::generateRouletteMatingPool()
+inline void GeneticAlgorithm::generateRouletteMatingPool()
 {
 	Sleep(100);
 	if (gMatingPool != NULL)
 		delete gMatingPool;
 		
-	gMatingPool = new Population(0, 5); //Seeding values aren't important
-	gMatingPool->setMainPopulation(false); //The destructor won't try to free invalid Individual pointers
+	gMatingPool = new Population(0, 0); //Seeding values aren't important	
 
 	unsigned int popSize = gPopulation->getIndividualVector()->size();
 	uint32_t size = popSize;
@@ -122,21 +126,26 @@ void GeneticAlgorithm::generateRouletteMatingPool()
 		
 		for (vector<Individual*>::iterator itr = population->begin(); itr != population->end(); itr++) {			
 			Individual *individual = *itr;
+			Individual * clone = new Individual(individual);
 			if (i >= eliteAmout)
 				break;
-			gMatingPool->getIndividualVector()->push_back(individual);							
+			gMatingPool->getIndividualVector()->push_back(clone);							
 			i++;
 		}
 		size -= eliteAmout;
 	}
 	
 	for (uint32_t i = 0; i < size; i += 2) {
-		Individual *ind0 = getFirstIndividualMatingRoulette(gPopulation, randomReal());
-		Individual *ind1 = getSecondIndividualMatingRoulette(gPopulation, ind0, randomReal());		
-		gMatingPool->getIndividualVector()->push_back(ind0);		
+		Individual * ind0 = getFirstIndividualMatingRoulette(gPopulation, randomReal());		
+		Individual * clone0 = new Individual(ind0);				
+		gMatingPool->getIndividualVector()->push_back(clone0);	
+
 		if (gMatingPool->getIndividualVector()->size() >= popSize)
 			break;
-		gMatingPool->getIndividualVector()->push_back(ind1);
+	
+		Individual * ind1 = getSecondIndividualMatingRoulette(gPopulation, ind0, randomReal());
+		Individual * clone1 = new Individual(ind1);
+		gMatingPool->getIndividualVector()->push_back(clone1);
 	}	
 
 }
@@ -151,33 +160,30 @@ inline void GeneticAlgorithm::crossOver()
 	
 	if (elitism) {
 		if (eliteAmout > popSize)
-			return; //This should never happen
+			return; //This should never happen		
 		startIndex = eliteAmout;		
 	}
-	
-
-
 
 	for (uint32_t i = startIndex; i < popSize; i += 2) {		
 		//Iterate over the elements two at a time for crossover operation
-		int k;
+
 		Individual * parentX = (*gMatingPool->getIndividualVector())[i];
 		Individual * parentY;
+
+		Individual * childXP = (*gPopulation->getIndividualVector())[i];
+		Individual * childYP;
+
 		if (i + 1 >= popSize) {
 			parentY = (*gMatingPool->getIndividualVector())[i - 1]; //This guy is alone, so it'll mate with the previous Individual
-			k = i - 1;
+			childYP = (*gPopulation->getIndividualVector())[i - 1];
 		}
 		else {
 			parentY = (*gMatingPool->getIndividualVector())[i + 1];
-			k = i + 1;
-		}
-
-		cout << i << " & " << k << endl;
-		//cin >> k;
+			childYP = (*gPopulation->getIndividualVector())[i + 1];			
+		}				
 
 		//Crossover each int32 in each Individual
-		crossOverIndividualInt32(parentX, parentY);
-		//printMatingPool();
+		crossOverIndividualInt32(parentX, parentY, childXP, childYP);		
 	}
 	
 }
@@ -254,6 +260,13 @@ inline void GeneticAlgorithm::printPopulation()
 		gPopulation->printPopulation();
 }
 
+inline void GeneticAlgorithm::printFittestIndividual()
+{
+	if (gPopulation == NULL)
+		return;
+	gPopulation->getFittestIndividual()->print();
+}
+
 inline void GeneticAlgorithm::refreshFitnessFunction()
 {
 	if (gPopulation == NULL)
@@ -288,6 +301,13 @@ inline void GeneticAlgorithm::printMatingPool()
 		gMatingPool->printPopulation();
 }
 
+inline Individual * GeneticAlgorithm::getFittestIndividual()
+{
+	if (gPopulation == NULL)
+		return NULL;
+	return gPopulation->getFittestIndividual();
+}
+
 inline Individual * GeneticAlgorithm::getFirstIndividualMatingRoulette(Population * pop, float probability)
 {
 	vector<Individual*>* population = pop->getIndividualVector();
@@ -303,23 +323,32 @@ inline Individual * GeneticAlgorithm::getFirstIndividualMatingRoulette(Populatio
 
 inline Individual * GeneticAlgorithm::getSecondIndividualMatingRoulette(Population * pop, Individual * ind0, float probability)
 {
-	vector<Individual*>* population = pop->getIndividualVector();
+	vector<Individual*>* population = pop->getIndividualVector();	
 
 	for (vector<Individual*>::iterator itr = population->begin(); itr != population->end(); itr++) {
-		Individual *individual = *itr;
-		if ((individual->getAccNormalizedFitness() >= probability) && (individual != pop->getFittestIndividual()))
+		Individual *individual = *itr;		
+		if ((individual->getAccNormalizedFitness() >= probability) && (individual != ind0)) {			
 			return individual;
+		}
 	}
 
-	if ((ind0 != pop->getFittestIndividual()))
-		return pop->getFittestIndividual();
-	else
-		return (*(std::next(population->begin()))); //Second element in list
+	//ind0 = last individual
+	//probability is high enough to only select the last individual
+	//Choose another member of population via the same process
+	//This will eventually not call itself
+	//This could eventually cause a stack overflow, however very rare
+	getSecondIndividualMatingRoulette(pop, ind0, randomReal());
+
+}
+
+inline int32_t GeneticAlgorithm::getVariable(vector<int32_t>* variables, uint32_t position)
+{
+	return (*variables)[position];
 }
 
 
 
-void GeneticAlgorithm::crossOverIndividualInt32(Individual * parentX, Individual * parentY){
+void GeneticAlgorithm::crossOverIndividualInt32(Individual * parentX, Individual * parentY, Individual * childXP, Individual * childYP){
 	/*
 	Uniform crossover
 	More info at: https://en.wikipedia.org/wiki/Crossover_(genetic_algorithm)
@@ -366,7 +395,7 @@ void GeneticAlgorithm::crossOverIndividualInt32(Individual * parentX, Individual
     }
 
 	//Assign the childs to replace their parents
-	parentX->setIndividual(childX);
-	parentY->setIndividual(childY);
+	childXP->setIndividual(childX);
+	childYP->setIndividual(childY);
 
 }

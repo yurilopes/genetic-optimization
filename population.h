@@ -14,8 +14,7 @@ class Population{
         vector<Individual*> population;
         mt19937 *gen;
         uniform_int_distribution<int32_t> *dis;
-        int32_t random();
-		bool	mainPopulation = true;
+        int32_t random();		
 		
 
     public:
@@ -27,8 +26,6 @@ class Population{
 		vector<Individual*>* getIndividualVector();
 		Individual * getFittestIndividual();
 		void refreshFitnessFunction(FitnessFunction func);
-		bool isMainPopulation();
-		void setMainPopulation(bool main);
 
 };
 
@@ -49,22 +46,11 @@ inline void Population::refreshFitnessFunction(FitnessFunction func)
 	}
 }
 
-inline bool Population::isMainPopulation()
-{
-	return mainPopulation;
-}
-
-inline void Population::setMainPopulation(bool main)
-{
-	mainPopulation = main;
-}
-
 Population::~Population(){
-	if(mainPopulation) //The destructor won't try to free invalid Individual pointers
-		for(vector<Individual*>::iterator itr = population.begin(); itr!=population.end(); itr++){
-			Individual *individual = *itr;
-			delete individual;
-		}
+	for(vector<Individual*>::iterator itr = population.begin(); itr!=population.end(); itr++){
+		Individual *individual = *itr;
+		delete individual;
+	}
 }
 
 int32_t Population::random(){
@@ -95,7 +81,7 @@ void Population::printPopulation(){
         Individual *individual = *itr;
 		cout << i << ": ";
         for(vector<int32_t>::iterator it = individual->getIndividual()->begin(); it!=individual->getIndividual()->end(); it++){
-            cout << setw(6) << *it;
+            cout << left << setw(6) << *it;
             cout << ", \t";
         }
         cout << "F=" << individual->getFitness();

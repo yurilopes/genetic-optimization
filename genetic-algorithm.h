@@ -8,12 +8,14 @@
 
 #include "population.h"
 
-mt19937 gen0_1(static_cast<unsigned int>(std::time(0)));
+mt19937 genGA(static_cast<unsigned int>(std::time(0)));
 uniform_real_distribution<float> disR0_1(0.0, 1.0);
+uniform_real_distribution<float> disR0_100(0.0, 100.0);
 uniform_int_distribution<int32_t> disI0_1(0, 1);
 
-#define randomReal() disR0_1(gen0_1)
-#define randomBinary() disI0_1(gen0_1)
+#define randomReal() disR0_1(genGA)
+#define randomReal100() disR0_100(genGA)
+#define randomBinary() disI0_1(genGA)
 
 class GeneticAlgorithm {
 	public:
@@ -32,10 +34,15 @@ class GeneticAlgorithm {
 		void	refreshFitnessFunction();
 		void	setElitism(bool elit);
 		bool	getElitism();
-		void	setEliteAmount(uint32_t amount);
-		uint32_t	getEliteAmount();
+		bool	getMutation();
+		void	setMutation(bool mut);
+		float	getMutationRate();
+		void	setMutationRate(float rate);
+		void	setEliteSize(uint32_t amount);
+		uint32_t	getEliteSize();
 		void	printMatingPool();
 		Individual * getFittestIndividual();
+
 
 		void selectionRoulette();
 		void generateRouletteMatingPool();
@@ -51,11 +58,14 @@ class GeneticAlgorithm {
 		uint32_t populationSize = 0 , individualSize = 0;
 		FitnessFunction fitnessFunc = NULL;		
 		bool elitism = true;
-		uint32_t eliteAmout = 1;
+		uint32_t eliteSize = 1;
+		bool mutation = true;
+		float mutationRate = 0.01f;
 		
-		static void crossOverIndividualInt32(Individual * parentX, Individual * parentY, Individual * childXP, Individual * childYP);
+		void crossOverIndividualInt32(Individual * parentX, Individual * parentY, Individual * childXP, Individual * childYP);
 		static Individual * getFirstIndividualMatingRoulette(Population * pop, float probability);
 		static Individual * getSecondIndividualMatingRoulette(Population * pop, Individual * ind0, float probability);		
+		void mutate(Individual * individual);
 };
 
 inline void GeneticAlgorithm::selectionRoulette() {
@@ -115,7 +125,7 @@ inline void GeneticAlgorithm::generateRouletteMatingPool()
 	unsigned int popSize = gPopulation->getIndividualVector()->size();
 	uint32_t size = popSize;
 
-	if (eliteAmout > popSize)
+	if (eliteSize > popSize)
 		return;
 
 
@@ -127,12 +137,12 @@ inline void GeneticAlgorithm::generateRouletteMatingPool()
 		for (vector<Individual*>::iterator itr = population->begin(); itr != population->end(); itr++) {			
 			Individual *individual = *itr;
 			Individual * clone = new Individual(individual);
-			if (i >= eliteAmout)
+			if (i >= eliteSize)
 				break;
 			gMatingPool->getIndividualVector()->push_back(clone);							
 			i++;
 		}
-		size -= eliteAmout;
+		size -= eliteSize;
 	}
 	
 	for (uint32_t i = 0; i < size; i += 2) {
@@ -159,9 +169,9 @@ inline void GeneticAlgorithm::crossOver()
 	uint32_t startIndex = 0;
 	
 	if (elitism) {
-		if (eliteAmout > popSize)
+		if (eliteSize > popSize)
 			return; //This should never happen		
-		startIndex = eliteAmout;		
+		startIndex = eliteSize;		
 	}
 
 	for (uint32_t i = startIndex; i < popSize; i += 2) {		
@@ -285,14 +295,34 @@ inline bool GeneticAlgorithm::getElitism()
 	return elitism;
 }
 
-inline void GeneticAlgorithm::setEliteAmount(uint32_t amount)
+inline bool GeneticAlgorithm::getMutation()
 {
-	eliteAmout = amount;
+	return mutation;
 }
 
-inline uint32_t GeneticAlgorithm::getEliteAmount()
+inline void GeneticAlgorithm::setMutation(bool mut)
 {
-	return eliteAmout;
+	mutation = mut;
+}
+
+inline float GeneticAlgorithm::getMutationRate()
+{
+	return mutationRate;
+}
+
+inline void GeneticAlgorithm::setMutationRate(float rate)
+{
+	mutationRate = rate;
+}
+
+inline void GeneticAlgorithm::setEliteSize(uint32_t amount)
+{
+	eliteSize = amount;
+}
+
+inline uint32_t GeneticAlgorithm::getEliteSize()
+{
+	return eliteSize;
 }
 
 inline void GeneticAlgorithm::printMatingPool()
@@ -337,8 +367,31 @@ inline Individual * GeneticAlgorithm::getSecondIndividualMatingRoulette(Populati
 	//Choose another member of population via the same process
 	//This will eventually not call itself
 	//This could eventually cause a stack overflow, however very rare
-	getSecondIndividualMatingRoulette(pop, ind0, randomReal());
+	return getSecondIndividualMatingRoulette(pop, ind0, randomReal());
 
+}
+
+inline void GeneticAlgorithm::mutate(Individual * individual)
+{
+	if (mutationRate < randomReal100())
+		return;
+
+	uint32_t vectorSize = individual->getGeneVector()->size();
+
+	uniform_int_distribution<uint32_t> dis(0, (vectorSize*32)-1);
+
+	//Choose a random bit to flip
+	uint32_t mutationBit = dis(genGA);	
+
+	uint32_t index = mutationBit / 32;
+	mutationBit -= (index * 32);
+	
+	bitset<32> bitX((*individual->getGeneVector())[index]);
+	//Flip bit
+	bitX.flip(mutationBit);
+	int32_t x = (int32_t)bitX.to_ulong();
+	//Store mutated value
+	(*individual->getGeneVector())[index] = x;
 }
 
 inline int32_t GeneticAlgorithm::getVariable(vector<int32_t>* variables, uint32_t position)
@@ -355,8 +408,8 @@ void GeneticAlgorithm::crossOverIndividualInt32(Individual * parentX, Individual
 
 	This function changes both parents to the result of the crossover operation
 	*/
-	vector<int32_t> * parentXV = parentX->getIndividual();
-	vector<int32_t> * parentYV = parentY->getIndividual();
+	vector<int32_t> * parentXV = parentX->getGeneVector();
+	vector<int32_t> * parentYV = parentY->getGeneVector();
     int32_t vectorSize = parentXV->size();
     vector<int32_t> *childX = new vector<int32_t>(vectorSize);
     vector<int32_t> *childY = new vector<int32_t>(vectorSize);
@@ -396,6 +449,8 @@ void GeneticAlgorithm::crossOverIndividualInt32(Individual * parentX, Individual
 
 	//Assign the childs to replace their parents
 	childXP->setIndividual(childX);
+	mutate(childXP);
 	childYP->setIndividual(childY);
+	mutate(childYP);
 
 }

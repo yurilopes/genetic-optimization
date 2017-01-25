@@ -55,15 +55,7 @@ int32_t fitnessFunction(vector<int32_t> *variables) {
 	return fitness;		
 }
 
-/*
-int32_t fitnessFunction(vector<int32_t> *variables){
-    int32_t soma = 0;
-    for(vector<int32_t>::iterator it = variables->begin(); it!=variables->end(); it++){
-        soma += *it;
-    }
-    return soma;
-}
-*/
+#define IDEAL_FITNESS 650
 
 int main(){
     /*
@@ -85,7 +77,7 @@ int main(){
 
 		ga.calculateFitness();
 
-		if (ga.getFittestIndividual()->getFitness() == 650) 
+		if (ga.getFittestIndividual()->getFitness() == IDEAL_FITNESS) 
 			break;		
 
 		if (i == 0) {

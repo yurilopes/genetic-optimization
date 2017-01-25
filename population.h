@@ -61,7 +61,7 @@ void Population::initialize(uint32_t populationSize, uint32_t individualSize, Fi
     for(uint32_t i=0; i<populationSize; i++){
         Individual *individual = new Individual(individualSize, fitFunction);
         for(uint32_t j=0; j<individualSize; j++){
-            (* individual->getIndividual())[j]=random();
+            (* individual->getGeneVector())[j]=random();
         }
         population.push_back(individual);
     }
@@ -80,7 +80,7 @@ void Population::printPopulation(){
     for(vector<Individual*>::iterator itr = population.begin(); itr!=population.end(); itr++){
         Individual *individual = *itr;
 		cout << i << ": ";
-        for(vector<int32_t>::iterator it = individual->getIndividual()->begin(); it!=individual->getIndividual()->end(); it++){
+        for(vector<int32_t>::iterator it = individual->getGeneVector()->begin(); it!=individual->getGeneVector()->end(); it++){
             cout << left << setw(6) << *it;
             cout << ", \t";
         }

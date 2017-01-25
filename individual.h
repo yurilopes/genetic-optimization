@@ -5,7 +5,7 @@ typedef int32_t (*FitnessFunction)(vector<int32_t>*);
 
 class Individual{
     protected:
-        vector<int32_t> *individual;
+        vector<int32_t> *gene;
         int32_t         fitness;
 		uint32_t        accFitness;
 		float			accNormalizedFitness;
@@ -15,7 +15,7 @@ class Individual{
         Individual(int32_t indSize, FitnessFunction fitFunction);
 		Individual(Individual * original);
         ~Individual();
-        vector<int32_t>* getIndividual();
+        vector<int32_t>* getGeneVector();
 		void setIndividual(vector<int32_t>* ind);
 		int32_t calculateFitness();
 		int32_t addToAccFitness(int32_t value);
@@ -32,7 +32,7 @@ class Individual{
 
 
 Individual::Individual(int32_t indSize, FitnessFunction fitFunction){
-    individual = new vector<int32_t>(indSize);
+    gene = new vector<int32_t>(indSize);
     fitness = 0;
 	accNormalizedFitness = 0.0;
     fitnessFunction = fitFunction;
@@ -45,22 +45,22 @@ inline Individual::Individual(Individual * original)
 	fitnessFunction = original->getFitnessFunction();
 
 	//Clone the vector
-	individual = new vector<int32_t>(*original->getIndividual());
+	gene = new vector<int32_t>(*original->getGeneVector());
 }
 
 Individual::~Individual(){
-    delete individual;
+    delete gene;
 }
 
-vector<int32_t>* Individual::getIndividual(){
-    return individual;
+vector<int32_t>* Individual::getGeneVector(){
+    return gene;
 }
 
 inline void Individual::setIndividual(vector<int32_t>* ind)
 {
-	if (individual != NULL)
-		delete individual;
-	individual = ind;
+	if (gene != NULL)
+		delete gene;
+	gene = ind;
 }
 
 int32_t Individual::getFitness(){
@@ -93,7 +93,7 @@ void Individual::setAccNormalizedFitness(float fit)
 
 inline void Individual::print()
 {
-	for (vector<int32_t>::iterator it = individual->begin(); it != individual->end(); it++) {
+	for (vector<int32_t>::iterator it = gene->begin(); it != gene->end(); it++) {
 		cout << left << setw(6) << *it;
 		cout << ", \t";
 	}
@@ -102,7 +102,7 @@ inline void Individual::print()
 }
 
 int32_t Individual::calculateFitness(){
-	fitness = fitnessFunction(individual);
+	fitness = fitnessFunction(gene);
 	accFitness = fitness;
     return fitness;
 }

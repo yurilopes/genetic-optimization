@@ -66,6 +66,8 @@ int main(){
 	GeneticAlgorithm ga;
 
 	ga.setElitism(true);	
+	ga.setMutation(true);
+	ga.setMutationRate(0.01f);
 	ga.setMinSeed(0);
 	ga.setMaxSeed(500);
 	ga.setFitnessFunction(fitnessFunction);
@@ -98,5 +100,5 @@ int main(){
 
 	
 
-    return 0;
+    return ga.getFittestIndividual()->getFitness();
 }

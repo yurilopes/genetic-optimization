@@ -97,8 +97,7 @@ inline void Individual::print()
 		cout << left << setw(6) << *it;
 		cout << ", \t";
 	}
-	cout << "F=" << fitness;	
-	cout << endl;
+	cout << "F=" << fitness << endl;;	
 }
 
 int32_t Individual::calculateFitness(){

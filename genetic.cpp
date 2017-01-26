@@ -1,4 +1,4 @@
-//Comment this line below if running in Visual Studio
+//Comment this line below if not running in Visual Studio
 #include "stdafx.h"
 
 #include <limits.h>
@@ -61,6 +61,7 @@ int32_t fitnessFunction(vector<int32_t> *variables) {
 }
 */
 
+/*
 int32_t fitnessFunction(vector<int32_t> *variables) {
 	int32_t x = GeneticAlgorithm::getVariable(variables, 0);
 	int32_t y = GeneticAlgorithm::getVariable(variables, 1);
@@ -72,10 +73,10 @@ int32_t fitnessFunction(vector<int32_t> *variables) {
 
 	int violations = 0;
 
-	/*
+	
 	To evaluate the constraints we look if their complement is true
 	If so, the constraint has been violated and we should punish the fitness
-	*/ 
+	 
 	if (x + y + z + w  > 40)
 		violations++;
 	if (2*x + y - z - w < 10)
@@ -102,8 +103,20 @@ int32_t fitnessFunction(vector<int32_t> *variables) {
 
 	return fitness;
 }
+*/
 
-#define IDEAL_FITNESS 115//650
+int32_t fitnessFunction(vector<int32_t> *variables) {
+	int32_t x = GeneticAlgorithm::getVariable(variables, 0);
+	int32_t y = GeneticAlgorithm::getVariable(variables, 1);
+	int32_t z = GeneticAlgorithm::getVariable(variables, 2);
+	int32_t w = GeneticAlgorithm::getVariable(variables, 3);
+	int32_t k = GeneticAlgorithm::getVariable(variables, 4);
+	
+	return x + (y + z)/2 - 3*z + x*w - k*(y+w) - w;
+
+}
+
+#define IDEAL_FITNESS 999999//650
 
 int main(){
     /*
@@ -114,21 +127,20 @@ int main(){
 	GeneticAlgorithm ga;
 
 	ga.setElitism(true);	
-	ga.setMutation(true);
+	ga.setMutation(false);
 	ga.setMutationRate(0.01f);
 	ga.setMinSeed(0);
-	ga.setMaxSeed(0x16);
+	ga.setMaxSeed(0x80);
 	ga.setFitnessFunction(fitnessFunction);
 
-	ga.initializePopulation(25, 4);
+	ga.initializePopulation(500, 5);
 
 	clock_t timeBegin = clock(); //Starting time
 
 	int i;
-	for (i = 0; i < 100; i++) {		
-		int k;		
+	for (i = 0; i < 1000; i++) {				
 
-		if (i % 50 == 0 && i !=0) {
+		if (i % 50 == 0) {
 			cout << "Iteration " << i << endl;
 			cout << "Fittest individual:" << endl;
 			ga.printFittestIndividual();			
@@ -139,19 +151,19 @@ int main(){
 		if (ga.getFittestIndividual()->getFitness() >= IDEAL_FITNESS) 
 			break;
 
-		if (i == 0) {
-			cout << "First fittest individual:" << endl;
-			ga.printFittestIndividual();
-			cout << "-------------------------------" << endl << endl;
-		}
-
 		ga.selectionRoulette();	
 
-		cout << "Iteration " << i << endl;
-		ga.printPopulation();
-		system("pause");
+		//cout << "Iteration " << i << endl;
+		//ga.printPopulation();		
 
-		ga.generateRouletteMatingPool();		
+		//cout << "-------------------------------------" << endl;
+
+		ga.generateRouletteMatingPool();
+		//ga.printMatingPool();
+
+		//cout << endl << endl << endl;
+
+		//system("pause");
 		ga.crossOver();
 	}
 
@@ -165,7 +177,7 @@ int main(){
 	ga.calculateFitness();
 	ga.printFittestIndividual();
 	cout << endl;
-	ga.printPopulation();
+	//ga.printPopulation();
 
 	
 

@@ -126,7 +126,6 @@ inline void GeneticAlgorithm::generateRouletteMatingPool()
 	if (eliteSize > popSize)
 		return;
 
-
 	vector<Individual*>* population = gPopulation->getIndividualVector();	
 	
 	if (elitism) {
@@ -144,12 +143,28 @@ inline void GeneticAlgorithm::generateRouletteMatingPool()
 	}
 	
 	for (uint32_t i = 0; i < size; i += 2) {
-		Individual * ind0 = getFirstIndividualMatingRoulette(gPopulation, randomReal());		
-		Individual * clone0 = new Individual(ind0);				
-		gMatingPool->getIndividualVector()->push_back(clone0);	
+		Individual * ind0;
+		Individual * clone0;						
 
-		if (gMatingPool->getIndividualVector()->size() >= popSize)
+		if (gMatingPool->getIndividualVector()->size() >= popSize) {
 			break;
+		}
+		
+		if (i+1 >= size) {
+			//This individual will mate with the previous one
+			//So we have to make sure it is NOT equal to the previous one
+			ind0 = gMatingPool->getIndividualVector()->back(); //ind0 comes from Mating Pool
+			ind0 = gMatingPool->getEqualIndividual(ind0); //ind0 comes from Population
+			Individual * ind1 = getSecondIndividualMatingRoulette(gPopulation, ind0, randomReal());
+			Individual * clone1 = new Individual(ind1);
+			gMatingPool->getIndividualVector()->push_back(clone1);
+			break;
+
+		} else {			
+			ind0 = getFirstIndividualMatingRoulette(gPopulation, randomReal());
+			clone0 = new Individual(ind0);
+			gMatingPool->getIndividualVector()->push_back(clone0);
+		}
 	
 		Individual * ind1 = getSecondIndividualMatingRoulette(gPopulation, ind0, randomReal());
 		Individual * clone1 = new Individual(ind1);
@@ -189,6 +204,9 @@ inline void GeneticAlgorithm::crossOver()
 			parentY = (*gMatingPool->getIndividualVector())[i + 1];
 			childYP = (*gPopulation->getIndividualVector())[i + 1];			
 		}				
+
+		//TODO Treat the situation when i+1 >= popsize takes over the i-1 already constructed child
+		//This isn't really and issue, maybe this isn't a problem at all
 
 		//Crossover each int32 in each Individual
 		crossOverIndividualInt32(parentX, parentY, childXP, childYP);		

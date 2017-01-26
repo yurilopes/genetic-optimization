@@ -24,6 +24,7 @@ class Population{
         void calculateFitness();		
         void initialize(uint32_t populationSize, uint32_t individualSize, FitnessFunction fitFunction);
 		vector<Individual*>* getIndividualVector();
+		Individual * getEqualIndividual(Individual * ind);
 		Individual * getFittestIndividual();
 		void refreshFitnessFunction(FitnessFunction func);
 
@@ -31,6 +32,16 @@ class Population{
 
 vector<Individual*>* Population::getIndividualVector() {
 	return &population;
+}
+
+inline Individual * Population::getEqualIndividual(Individual * ind)
+{
+	for (vector<Individual*>::iterator itr = population.begin(); itr != population.end(); itr++) {
+		Individual *individual = *itr;
+		if (individual->equals(ind))
+			return individual;
+	}
+	return NULL;
 }
 
 inline Individual * Population::getFittestIndividual()

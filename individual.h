@@ -26,6 +26,7 @@ class Individual{
 		float getAccNormalizedFitness();
 		void setAccNormalizedFitness(float fit);
 		void print();
+		bool equals(Individual * ind);
 
         static bool compare(Individual *ind0, Individual *ind1);
 };
@@ -98,6 +99,20 @@ inline void Individual::print()
 		cout << ", \t";
 	}
 	cout << "F=" << fitness << endl;;	
+}
+
+inline bool Individual::equals(Individual * ind)
+{
+	if (gene->size() != ind->getGeneVector()->size())
+		return false;
+
+	for (unsigned int i = 0; i < gene->size(); i++) {
+		if ((*gene)[i] != (*ind->getGeneVector())[i])
+			return false;
+	}
+
+	return true;
+
 }
 
 int32_t Individual::calculateFitness(){

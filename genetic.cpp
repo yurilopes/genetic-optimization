@@ -61,62 +61,67 @@ int32_t fitnessFunction(vector<int32_t> *variables) {
 }
 */
 
-/*
+
 int32_t fitnessFunction(vector<int32_t> *variables) {
+	//http://www.zweigmedia.com/RealWorld/simplex.html
+
 	int32_t x = GeneticAlgorithm::getVariable(variables, 0);
 	int32_t y = GeneticAlgorithm::getVariable(variables, 1);
 	int32_t z = GeneticAlgorithm::getVariable(variables, 2);
 	int32_t w = GeneticAlgorithm::getVariable(variables, 3);
 
-	int32_t fitness = (x / 2) + 3*y + z + 4*w;
+	int32_t fitness = (x / 2) + 3 * y + z + 4 * w;
 	//Optimal Solution: p = 115; x = 10, y = 10, z = 0, w = 20
 
-	int violations = 0;
+	bool violated = false;
+	int32_t violations[7] = { 0, 0, 0, 0, 0, 0, 0};
 
-	
-	To evaluate the constraints we look if their complement is true
+	/*
+	To evaluate the constraints we check if their complement is true
 	If so, the constraint has been violated and we should punish the fitness
-	 
-	if (x + y + z + w  > 40)
-		violations++;
-	if (2*x + y - z - w < 10)
-		violations++;
-	if (w - y < 10)
-		violations++;
+	*/
 
-	if (x<0)
-		violations++;
-	if (y<0)
-		violations++;
-	if (z<0)
-		violations++;
-	if (w<0)
-		violations++;
-
-	if (violations > 0) {
-		fitness = 0;//5*6;
-	for (int i = 0; i < violations; i++)
-	fitness -= 5;
+	if (x + y + z + w > 40) {
+		violated = true;
+		violations[0] = (x + y + z + w) - 40;
 	}
-	//else
-		//fitness += 5000; //Bonus for not violating constraints
+	if (2 * x + y - z - w < 10) {
+		violated = true;
+		violations[1] = 10 - (2 * x + y - z - w);
+	}
+	if (w - y < 10) {
+		violated = true;
+		violations[2] = 10 - (w - y);
+	}
+
+	if (x < 0) {
+		violated = true;
+		violations[3] = -x;
+	}
+	if (y < 0) {
+		violated = true;
+		violations[4] = -y;
+	}
+	if (z < 0) {
+		violated = true;
+		violations[5] = -z;
+	}
+	if (w < 0) {
+		violated = true;
+		violations[6] = -w;
+	}
+
+	if (violated) {		
+		fitness = 0;
+		for (int i = 0; i < 7; i++)
+			fitness -= abs(violations[i]);		
+	}
 
 	return fitness;
 }
-*/
 
-int32_t fitnessFunction(vector<int32_t> *variables) {
-	int32_t x = GeneticAlgorithm::getVariable(variables, 0);
-	int32_t y = GeneticAlgorithm::getVariable(variables, 1);
-	int32_t z = GeneticAlgorithm::getVariable(variables, 2);
-	int32_t w = GeneticAlgorithm::getVariable(variables, 3);
-	int32_t k = GeneticAlgorithm::getVariable(variables, 4);
-	
-	return x + (y + z)/2 - 3*z + x*w - k*(y+w) - w;
 
-}
-
-#define IDEAL_FITNESS 999999//650
+#define IDEAL_FITNESS 115
 
 int main(){
     /*
@@ -130,20 +135,20 @@ int main(){
 	ga.setMutation(false);
 	ga.setMutationRate(0.01f);
 	ga.setMinSeed(0);
-	ga.setMaxSeed(0x80);
+	ga.setMaxSeed(20);
 	ga.setFitnessFunction(fitnessFunction);
 
-	ga.initializePopulation(500, 5);
+	ga.initializePopulation(20, 4);
 
 	clock_t timeBegin = clock(); //Starting time
 
 	int i;
-	for (i = 0; i < 1000; i++) {				
+	for (i = 0; i < 100; i++) {				
 
 		if (i % 50 == 0) {
 			cout << "Iteration " << i << endl;
 			cout << "Fittest individual:" << endl;
-			ga.printFittestIndividual();			
+			ga.printFittestIndividual();					
 		}
 
 		ga.calculateFitness();
@@ -161,7 +166,7 @@ int main(){
 		ga.generateRouletteMatingPool();
 		//ga.printMatingPool();
 
-		//cout << endl << endl << endl;
+		//cout << endl << endl;
 
 		//system("pause");
 		ga.crossOver();

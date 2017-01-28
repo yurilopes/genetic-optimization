@@ -65,7 +65,7 @@ int32_t fitnessFunction(vector<int32_t> *variables) {
 }
 */
 
-#define MAX_SEED 100
+#define MAX_SEED 20
 
 
 int32_t fitnessFunction(vector<int32_t> *variables) {
@@ -159,12 +159,12 @@ int main(){
 	ga.setElitism(true);	
 	ga.setEliteSize(5);
 	ga.setMutation(true);
-	ga.setMutationRate(0.1f);
+	ga.setMutationRate(0.01f);
 	ga.setMinSeed(0);
 	ga.setMaxSeed(MAX_SEED);
 	ga.setFitnessFunction(fitnessFunction);
 
-	ga.initializePopulation(1000, 4);
+	ga.initializePopulation(2000, 4);
 
 	clock_t timeBegin = clock(); //Starting time
 

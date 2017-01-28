@@ -414,23 +414,11 @@ inline void GeneticAlgorithm::mutate(Individual * individual)
 
 	uint32_t vectorSize = individual->getGeneVector()->size();
 
-	uniform_int_distribution<uint32_t> dis(0, (vectorSize*32)-1);
-
-	//Choose a random bit to flip
-	uint32_t mutationBit = dis(genGA);	
-
-	uint32_t index = mutationBit / 32;
-	mutationBit -= (index * 32);
-	//uniform_int_distribution<uint32_t> dis2(0, 7);
-	//mutationBit = dis2(genGA);
-
+	uniform_int_distribution<uint32_t> dis2(0, 20);
 	
-	bitset<32> bitX((*individual->getGeneVector())[index]);	
-	//Flip bit
-	bitX.flip(mutationBit);
-	int32_t x = (int32_t)bitX.to_ulong();
-	//Store mutated value
-	(*individual->getGeneVector())[index] = x;
+	for (uint32_t i = 0; i < vectorSize; i++) {
+		(*individual->getGeneVector())[i] = dis2(genGA);
+	}
 }
 
 inline int32_t GeneticAlgorithm::getVariable(vector<int32_t>* variables, uint32_t position)

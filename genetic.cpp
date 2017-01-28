@@ -7,6 +7,10 @@ using namespace std;
 
 #include "genetic-algorithm.h"
 
+/*Na mating pool, garantir que um indivíduo nao vai cruzar com ele mesmo não só pelo ponteiro,
+mas usando equals. se o laço principal nao der certo, tentar de novo com uma populacao clonada sem aquele individuo
+se isso nao escolher ninguem, que ele cruze consigo porque a populacao ja esta condenada
+*/
 /*
 Maximize F = –2*x[0] + 5*x[1]
 Subject to:
@@ -61,6 +65,8 @@ int32_t fitnessFunction(vector<int32_t> *variables) {
 }
 */
 
+#define MAX_SEED 100
+
 
 int32_t fitnessFunction(vector<int32_t> *variables) {
 	//http://www.zweigmedia.com/RealWorld/simplex.html
@@ -74,7 +80,7 @@ int32_t fitnessFunction(vector<int32_t> *variables) {
 	//Optimal Solution: p = 115; x = 10, y = 10, z = 0, w = 20
 
 	bool violated = false;
-	int32_t violations[7] = { 0, 0, 0, 0, 0, 0, 0};
+	int32_t violations[11] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 	/*
 	To evaluate the constraints we check if their complement is true
@@ -110,11 +116,30 @@ int32_t fitnessFunction(vector<int32_t> *variables) {
 		violated = true;
 		violations[6] = -w;
 	}
+	if (x > MAX_SEED) {
+		violated = true;
+		violations[7] = x-MAX_SEED;
+	}
+	if (y > MAX_SEED) {
+		violated = true;
+		violations[8] = y - MAX_SEED;
+	}
+	if (z > MAX_SEED) {
+		violated = true;
+		violations[9] = z - MAX_SEED;
+	}
+	if (w > MAX_SEED) {
+		violated = true;
+		violations[10] = w - MAX_SEED;
+	}
 
 	if (violated) {		
 		fitness = 0;
 		for (int i = 0; i < 7; i++)
-			fitness -= abs(violations[i]);		
+			fitness -= abs(violations[i]);
+		for (int i = 3; i < 11; i++)
+			if (violations[i] != 0)
+				return -9999;
 	}
 
 	return fitness;
@@ -132,18 +157,19 @@ int main(){
 	GeneticAlgorithm ga;
 
 	ga.setElitism(true);	
-	ga.setMutation(false);
-	ga.setMutationRate(0.01f);
+	ga.setEliteSize(5);
+	ga.setMutation(true);
+	ga.setMutationRate(0.1f);
 	ga.setMinSeed(0);
-	ga.setMaxSeed(20);
+	ga.setMaxSeed(MAX_SEED);
 	ga.setFitnessFunction(fitnessFunction);
 
-	ga.initializePopulation(20, 4);
+	ga.initializePopulation(1000, 4);
 
 	clock_t timeBegin = clock(); //Starting time
 
 	int i;
-	for (i = 0; i < 100; i++) {				
+	for (i = 0; i < 0x6FFFFFFF; i++) {				
 
 		if (i % 50 == 0) {
 			cout << "Iteration " << i << endl;
@@ -153,7 +179,7 @@ int main(){
 
 		ga.calculateFitness();
 
-		if (ga.getFittestIndividual()->getFitness() >= IDEAL_FITNESS) 
+		if (ga.getFittestIndividual()->getFitness() == IDEAL_FITNESS) 
 			break;
 
 		ga.selectionRoulette();	

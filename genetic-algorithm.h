@@ -364,46 +364,47 @@ inline Individual * GeneticAlgorithm::getFirstIndividualMatingRoulette(Populatio
 			return individual;			
 	}
 
-	return pop->getFittestIndividual();
+	return population->back(); //This should only happen if the last individual has a normalized fitness less than 1
 }
 
 inline Individual * GeneticAlgorithm::getSecondIndividualMatingRoulette(Population * pop, Individual * ind0, float probability)
 {
-	vector<Individual*>* population = pop->getIndividualVector();	
 
+	vector<Individual*>* population = pop->getIndividualVector();
+
+	bool found = false;
+
+	Individual * result = NULL, * lastIndividual = NULL;
+
+	//Generate a population that consists of the original excluding ind0
 	for (vector<Individual*>::iterator itr = population->begin(); itr != population->end(); itr++) {
-		Individual *individual = *itr;		
-		if ((individual->getAccNormalizedFitness() >= probability) && (individual != ind0)) {			
-			return individual;
+		Individual *individual = *itr;
+		if (!individual->equals(ind0)) {
+			lastIndividual = individual;			
+			found = true;
+
+			if (individual->getAccNormalizedFitness() >= probability && result == NULL) //Result was found
+				result = individual;			
 		}
 	}
 
+	if (!found) {
+		//No individual different from ind0 was found
+		//Population is already homogeneous		
+		return ind0;
+	}	
 
+	if (result)
+		return result;
 
-	//ind0 = last individual
-	//probability is high enough to only select the last individual
-	if (ind0 == population->back()) {
-		uniform_int_distribution<int32_t> dis(0, pop->getIndividualVector()->size() - 2);
-		return (*pop->getIndividualVector())[dis(genGA)]; //The last will always mate with any other Individual
-	}
-	else {
-		//The last individual has a normalized fitness less than 1
-		//This is very rare
+	//tmpPop has individuals which are not ind0
+	//The probability could not match any individuals in tmpPop
+	//This happens if, and only if, the original population had its tail full of ind0s
+	//In this case, we can either get the last individual in tmpPop which has the closest AccNormalizedFitness to probability
+	//Or choose a random individual in tmpPop
+	//The former, however, is empirically preferred since it proportionally favors the best individuals
 
-		//This could cause a stack overflow, however very rare
-		return getSecondIndividualMatingRoulette(pop, ind0, randomReal());
-	}
-
-
-	/*
-	The below recursive call has been remove for a while
-	Convergence made it be called too many times
-	*/
-	//Choose another member of population via the same process
-	//This will eventually not call itself
-	//This could eventually cause a stack overflow, however very rare		
-	//return getSecondIndividualMatingRoulette(pop, ind0, randomReal());
-
+	return lastIndividual;
 }
 
 inline void GeneticAlgorithm::mutate(Individual * individual)
@@ -420,8 +421,11 @@ inline void GeneticAlgorithm::mutate(Individual * individual)
 
 	uint32_t index = mutationBit / 32;
 	mutationBit -= (index * 32);
+	//uniform_int_distribution<uint32_t> dis2(0, 7);
+	//mutationBit = dis2(genGA);
+
 	
-	bitset<32> bitX((*individual->getGeneVector())[index]);
+	bitset<32> bitX((*individual->getGeneVector())[index]);	
 	//Flip bit
 	bitX.flip(mutationBit);
 	int32_t x = (int32_t)bitX.to_ulong();

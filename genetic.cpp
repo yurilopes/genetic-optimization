@@ -7,66 +7,8 @@ using namespace std;
 
 #include "genetic-algorithm.h"
 
-/*Na mating pool, garantir que um indivíduo nao vai cruzar com ele mesmo não só pelo ponteiro,
-mas usando equals. se o laço principal nao der certo, tentar de novo com uma populacao clonada sem aquele individuo
-se isso nao escolher ninguem, que ele cruze consigo porque a populacao ja esta condenada
-*/
-/*
-Maximize F = –2*x[0] + 5*x[1]
-Subject to:
-
-x[0] >= 100
-x[0] <= 200
-
-x[1] >= 80
-x[1] <= 170
-
-x[1] >= –x[0] + 200
-
-Optimal values:
-P = 650
-x[0] = 100
-x[1] = 170
-
-First example of http://www.purplemath.com/modules/linprog3.htm
-
-*/
-/*
-int32_t fitnessFunction(vector<int32_t> *variables) {
-	int32_t x0 = GeneticAlgorithm::getVariable(variables, 0);
-	int32_t x1 = GeneticAlgorithm::getVariable(variables, 1);
-
-	int32_t fitness = -2*x0 + 5*x1;	
-	
-	int violations = 0;
-
-	/*
-	To evaluate the constraints we look if their complement is true
-	If so, the constraint has been violated and we should punish the fitness
-	*/ /*
-	if (x0 < 100)
-		violations++;
-	if (x0 > 200)
-		violations++;
-	if (x1 < 80)
-		violations++;
-	if (x1 > 170)
-		violations++;
-	if (x1 < -x0 + 200)
-		violations++;
-
-	if (violations > 0) {
-		fitness = 0;
-		for (int i = 0; i < violations; i++)
-			fitness -= 5;
-	}
-
-	return fitness;		
-}
-*/
 
 #define MAX_SEED 20
-
 
 int32_t fitnessFunction(vector<int32_t> *variables) {
 	//http://www.zweigmedia.com/RealWorld/simplex.html
@@ -145,8 +87,7 @@ int32_t fitnessFunction(vector<int32_t> *variables) {
 	return fitness;
 }
 
-
-#define IDEAL_FITNESS 115
+#define IDEAL_FITNESS 14
 
 int main(){
     /*
@@ -154,6 +95,17 @@ int main(){
     Each individual is vector of ints
     Each problem variable/gene is an int
     */
+
+	vector<Gene> genes;
+
+	Gene *gene = new Gene(INT8);
+
+
+	genes.push_back(*gene);
+
+
+	return 0;
+
 	GeneticAlgorithm ga;
 
 	ga.setElitism(true);	
@@ -164,7 +116,7 @@ int main(){
 	ga.setMaxSeed(MAX_SEED);
 	ga.setFitnessFunction(fitnessFunction);
 
-	ga.initializePopulation(2000, 4);
+	ga.initializePopulation(50, 4);
 
 	clock_t timeBegin = clock(); //Starting time
 

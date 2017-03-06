@@ -1,3 +1,5 @@
+#pragma once
+
 #include <vector>
 #include <vector>
 #include <random>
@@ -6,12 +8,12 @@
 #include <iomanip>
 #include <algorithm>
 
-#include "individual.h"
+#include "chromosome.h"
 #include "utils.h"
 
 class Population{
     protected:
-        vector<Individual*> population;
+        vector<Chromosome*> population;
         mt19937 *gen;
         uniform_int_distribution<int32_t> *dis;
         int32_t random();		
@@ -23,43 +25,43 @@ class Population{
         void printPopulation();
         void calculateFitness();		
         void initialize(uint32_t populationSize, uint32_t individualSize, FitnessFunction fitFunction);
-		vector<Individual*>* getIndividualVector();
-		Individual * getEqualIndividual(Individual * ind);
-		Individual * getFittestIndividual();
+		vector<Chromosome*>* getIndividualVector();
+		Chromosome * getEqualIndividual(Chromosome * ind);
+		Chromosome * getFittestIndividual();
 		void refreshFitnessFunction(FitnessFunction func);
 
 };
 
-vector<Individual*>* Population::getIndividualVector() {
+vector<Chromosome*>* Population::getIndividualVector() {
 	return &population;
 }
 
-inline Individual * Population::getEqualIndividual(Individual * ind)
+inline Chromosome * Population::getEqualIndividual(Chromosome * ind)
 {
-	for (vector<Individual*>::iterator itr = population.begin(); itr != population.end(); itr++) {
-		Individual *individual = *itr;
+	for (vector<Chromosome*>::iterator itr = population.begin(); itr != population.end(); itr++) {
+		Chromosome *individual = *itr;
 		if (individual->equals(ind))
 			return individual;
 	}
 	return NULL;
 }
 
-inline Individual * Population::getFittestIndividual()
+inline Chromosome * Population::getFittestIndividual()
 {
 	return population.front();
 }
 
 inline void Population::refreshFitnessFunction(FitnessFunction func)
 {
-	for (vector<Individual*>::iterator itr = population.begin(); itr != population.end(); itr++) {
-		Individual *individual = *itr;
+	for (vector<Chromosome*>::iterator itr = population.begin(); itr != population.end(); itr++) {
+		Chromosome *individual = *itr;
 		individual->setFitnessFunction(func);
 	}
 }
 
 Population::~Population(){
-	for(vector<Individual*>::iterator itr = population.begin(); itr!=population.end(); itr++){
-		Individual *individual = *itr;
+	for(vector<Chromosome*>::iterator itr = population.begin(); itr!=population.end(); itr++){
+		Chromosome *individual = *itr;
 		delete individual;
 	}
 }
@@ -70,9 +72,9 @@ int32_t Population::random(){
 
 void Population::initialize(uint32_t populationSize, uint32_t individualSize, FitnessFunction fitFunction){
     for(uint32_t i=0; i<populationSize; i++){
-        Individual *individual = new Individual(individualSize, fitFunction);
+        Chromosome *individual = new Chromosome(individualSize, fitFunction);
         for(uint32_t j=0; j<individualSize; j++){
-            (* individual->getGeneVector())[j]=random();
+            (* individual->getGenes())[j]=random();
         }
         population.push_back(individual);
     }
@@ -88,10 +90,10 @@ Population::Population(int32_t minSeed, int32_t maxSeed){
 
 void Population::printPopulation(){
 	uint32_t i = 0;
-    for(vector<Individual*>::iterator itr = population.begin(); itr!=population.end(); itr++){
-        Individual *individual = *itr;
+    for(vector<Chromosome*>::iterator itr = population.begin(); itr!=population.end(); itr++){
+        Chromosome *individual = *itr;
 		cout << i << ": ";
-        for(vector<int32_t>::iterator it = individual->getGeneVector()->begin(); it!=individual->getGeneVector()->end(); it++){
+        for(vector<int32_t>::iterator it = individual->getGenes()->begin(); it!=individual->getGenes()->end(); it++){
             cout << left << setw(6) << *it;
             cout << ", \t";
         }
@@ -107,10 +109,10 @@ void Population::calculateFitness(){
 	/*
 	Calculate fitness values for each individual
 	*/
-    for(vector<Individual*>::iterator itr = population.begin(); itr!=population.end(); itr++){
-        Individual *individual = *itr;
+    for(vector<Chromosome*>::iterator itr = population.begin(); itr!=population.end(); itr++){
+        Chromosome *individual = *itr;
         individual->calculateFitness();
     }
 
-    sort(population.begin(), population.end(), Individual::compare);
+    sort(population.begin(), population.end(), Chromosome::compare);
 }

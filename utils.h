@@ -1,3 +1,5 @@
+#pragma once
+
 template <typename Iter>
 Iter nextIterator(Iter iter){
     return ++iter;

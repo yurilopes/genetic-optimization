@@ -40,7 +40,7 @@ class GeneticAlgorithm {
 		void	setEliteSize(uint32_t amount);
 		uint32_t	getEliteSize();
 		void	printMatingPool();
-		Individual * getFittestIndividual();
+		Chromosome * getFittestIndividual();
 
 
 		void selectionRoulette();
@@ -62,23 +62,23 @@ class GeneticAlgorithm {
 		float mutationRate = 0.01f;
 		
 		void crossOverIndividualInt32(Individual * parentX, Individual * parentY, Individual * childXP, Individual * childYP);
-		static Individual * getFirstIndividualMatingRoulette(Population * pop, float probability);
-		static Individual * getSecondIndividualMatingRoulette(Population * pop, Individual * ind0, float probability);		
-		void mutate(Individual * individual);
+		static Chromosome * getFirstIndividualMatingRoulette(Population * pop, float probability);
+		static Chromosome * getSecondIndividualMatingRoulette(Population * pop, Individual * ind0, float probability);		
+		void mutate(Individual * individual);		
 };
 
 inline void GeneticAlgorithm::selectionRoulette() {
 	int32_t total = 0, lowest, current;
 	float accumulatedNormFit = 0.0;
 
-	vector<Individual*>* population = gPopulation->getIndividualVector();
+	vector<Chromosome*>* population = gPopulation->getIndividualVector();
 
 	/*
 	Calculate the lowest fitness value
 	This is used to translate every fitness value to a positive range
 	*/
-	for (vector<Individual*>::iterator itr = population->begin(); itr != population->end(); itr++) {
-		Individual *individual = *itr;
+	for (vector<Chromosome*>::iterator itr = population->begin(); itr != population->end(); itr++) {
+		Chromosome *individual = *itr;
 		current = individual->getFitness();
 		if (itr == population->begin()) //Lowest = fitness of the first iteration
 			lowest = current;
@@ -97,16 +97,16 @@ inline void GeneticAlgorithm::selectionRoulette() {
 	Redefine the fitness for each individual
 	and calculate the total sum of fitness
 	*/
-	for (vector<Individual*>::iterator itr = population->begin(); itr != population->end(); itr++) {
-		Individual *individual = *itr;
+	for (vector<Chromosome*>::iterator itr = population->begin(); itr != population->end(); itr++) {
+		Chromosome *individual = *itr;
 		total += individual->addToAccFitness(lowest);
 	}
 
 	/*
 	Calculate the normalized fitness for each individual
 	*/
-	for (vector<Individual*>::iterator itr = population->begin(); itr != population->end(); itr++) {
-		Individual *individual = *itr;
+	for (vector<Chromosome*>::iterator itr = population->begin(); itr != population->end(); itr++) {
+		Chromosome *individual = *itr;
 		accumulatedNormFit += ((float)individual->getAccFitness() / (float)total);		
 		individual->setAccNormalizedFitness(accumulatedNormFit);
 	}
@@ -126,14 +126,14 @@ inline void GeneticAlgorithm::generateRouletteMatingPool()
 	if (eliteSize > popSize)
 		return;
 
-	vector<Individual*>* population = gPopulation->getIndividualVector();	
+	vector<Chromosome*>* population = gPopulation->getIndividualVector();	
 	
 	if (elitism) {
 		uint32_t i = 0;
 		
-		for (vector<Individual*>::iterator itr = population->begin(); itr != population->end(); itr++) {			
-			Individual *individual = *itr;
-			Individual * clone = new Individual(individual);
+		for (vector<Chromosome*>::iterator itr = population->begin(); itr != population->end(); itr++) {			
+			Chromosome *individual = *itr;
+			Chromosome * clone = new Chromosome(individual);
 			if (i >= eliteSize)
 				break;
 			gMatingPool->getIndividualVector()->push_back(clone);							
@@ -143,8 +143,8 @@ inline void GeneticAlgorithm::generateRouletteMatingPool()
 	}
 	
 	for (uint32_t i = 0; i < size; i += 2) {
-		Individual * ind0;
-		Individual * clone0;						
+		Chromosome * ind0;
+		Chromosome * clone0;						
 
 		if (gMatingPool->getIndividualVector()->size() >= popSize) {
 			break;
@@ -155,19 +155,19 @@ inline void GeneticAlgorithm::generateRouletteMatingPool()
 			//So we have to make sure it is NOT equal to the previous one
 			ind0 = gMatingPool->getIndividualVector()->back(); //ind0 comes from Mating Pool
 			ind0 = gMatingPool->getEqualIndividual(ind0); //ind0 comes from Population
-			Individual * ind1 = getSecondIndividualMatingRoulette(gPopulation, ind0, randomReal());
-			Individual * clone1 = new Individual(ind1);
+			Chromosome * ind1 = getSecondIndividualMatingRoulette(gPopulation, ind0, randomReal());
+			Chromosome * clone1 = new Chromosome(ind1);
 			gMatingPool->getIndividualVector()->push_back(clone1);
 			break;
 
 		} else {			
 			ind0 = getFirstIndividualMatingRoulette(gPopulation, randomReal());
-			clone0 = new Individual(ind0);
+			clone0 = new Chromosome(ind0);
 			gMatingPool->getIndividualVector()->push_back(clone0);
 		}
 	
-		Individual * ind1 = getSecondIndividualMatingRoulette(gPopulation, ind0, randomReal());
-		Individual * clone1 = new Individual(ind1);
+		Chromosome * ind1 = getSecondIndividualMatingRoulette(gPopulation, ind0, randomReal());
+		Chromosome * clone1 = new Chromosome(ind1);
 		gMatingPool->getIndividualVector()->push_back(clone1);
 	}	
 
@@ -190,11 +190,11 @@ inline void GeneticAlgorithm::crossOver()
 	for (uint32_t i = startIndex; i < popSize; i += 2) {		
 		//Iterate over the elements two at a time for crossover operation
 
-		Individual * parentX = (*gMatingPool->getIndividualVector())[i];
-		Individual * parentY;
+		Chromosome * parentX = (*gMatingPool->getIndividualVector())[i];
+		Chromosome * parentY;
 
-		Individual * childXP = (*gPopulation->getIndividualVector())[i];
-		Individual * childYP;
+		Chromosome * childXP = (*gPopulation->getIndividualVector())[i];
+		Chromosome * childYP;
 
 		if (i + 1 >= popSize) {
 			parentY = (*gMatingPool->getIndividualVector())[i - 1]; //This guy is alone, so it'll mate with the previous Individual
@@ -347,19 +347,19 @@ inline void GeneticAlgorithm::printMatingPool()
 		gMatingPool->printPopulation();
 }
 
-inline Individual * GeneticAlgorithm::getFittestIndividual()
+inline Chromosome * GeneticAlgorithm::getFittestIndividual()
 {
 	if (gPopulation == NULL)
 		return NULL;
 	return gPopulation->getFittestIndividual();
 }
 
-inline Individual * GeneticAlgorithm::getFirstIndividualMatingRoulette(Population * pop, float probability)
+inline Chromosome * GeneticAlgorithm::getFirstIndividualMatingRoulette(Population * pop, float probability)
 {
-	vector<Individual*>* population = pop->getIndividualVector();
+	vector<Chromosome*>* population = pop->getIndividualVector();
 
-	for (vector<Individual*>::iterator itr = population->begin(); itr != population->end(); itr++) {
-		Individual *individual = *itr;
+	for (vector<Chromosome*>::iterator itr = population->begin(); itr != population->end(); itr++) {
+		Chromosome *individual = *itr;
 		if (individual->getAccNormalizedFitness() >= probability)
 			return individual;			
 	}
@@ -367,18 +367,18 @@ inline Individual * GeneticAlgorithm::getFirstIndividualMatingRoulette(Populatio
 	return population->back(); //This should only happen if the last individual has a normalized fitness less than 1
 }
 
-inline Individual * GeneticAlgorithm::getSecondIndividualMatingRoulette(Population * pop, Individual * ind0, float probability)
+inline Chromosome * GeneticAlgorithm::getSecondIndividualMatingRoulette(Population * pop, Chromosome * ind0, float probability)
 {
 
-	vector<Individual*>* population = pop->getIndividualVector();
+	vector<Chromosome*>* population = pop->getIndividualVector();
 
 	bool found = false;
 
-	Individual * result = NULL, * lastIndividual = NULL;
+	Chromosome * result = NULL, * lastIndividual = NULL;
 
 	//Generate a population that consists of the original excluding ind0
-	for (vector<Individual*>::iterator itr = population->begin(); itr != population->end(); itr++) {
-		Individual *individual = *itr;
+	for (vector<Chromosome*>::iterator itr = population->begin(); itr != population->end(); itr++) {
+		Chromosome *individual = *itr;
 		if (!individual->equals(ind0)) {
 			lastIndividual = individual;			
 			found = true;
@@ -407,17 +407,17 @@ inline Individual * GeneticAlgorithm::getSecondIndividualMatingRoulette(Populati
 	return lastIndividual;
 }
 
-inline void GeneticAlgorithm::mutate(Individual * individual)
+inline void GeneticAlgorithm::mutate(Chromosome * individual)
 {	
 	if (mutationRate < randomReal100())
 		return;
 
-	uint32_t vectorSize = individual->getGeneVector()->size();
+	uint32_t vectorSize = individual->getGenes()->size();
 
 	uniform_int_distribution<uint32_t> dis2(0, 20);
 	
 	for (uint32_t i = 0; i < vectorSize; i++) {
-		(*individual->getGeneVector())[i] = dis2(genGA);
+		(*individual->getGenes())[i] = dis2(genGA);
 	}
 }
 
@@ -428,15 +428,15 @@ inline int32_t GeneticAlgorithm::getVariable(vector<int32_t>* variables, uint32_
 
 
 
-void GeneticAlgorithm::crossOverIndividualInt32(Individual * parentX, Individual * parentY, Individual * childXP, Individual * childYP){
+void GeneticAlgorithm::crossOverIndividualInt32(Chromosome * parentX, Chromosome * parentY, Chromosome * childXP, Chromosome * childYP){
 	/*
 	Uniform crossover
 	More info at: https://en.wikipedia.org/wiki/Crossover_(genetic_algorithm)
 
 	This function changes both parents to the result of the crossover operation
 	*/
-	vector<int32_t> * parentXV = parentX->getGeneVector();
-	vector<int32_t> * parentYV = parentY->getGeneVector();
+	vector<int32_t> * parentXV = parentX->getGenes();
+	vector<int32_t> * parentYV = parentY->getGenes();
     int32_t vectorSize = parentXV->size();
     vector<int32_t> *childX = new vector<int32_t>(vectorSize);
     vector<int32_t> *childY = new vector<int32_t>(vectorSize);
@@ -475,10 +475,10 @@ void GeneticAlgorithm::crossOverIndividualInt32(Individual * parentX, Individual
     }
 
 	//Assign the childs to replace their parents
-	childXP->setIndividual(childX);
+	childXP->setChromosome(childX);
 	if(mutation)
 		mutate(childXP);
-	childYP->setIndividual(childY);
+	childYP->setChromosome(childY);
 	if(mutation)
 		mutate(childYP);
 

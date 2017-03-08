@@ -5,15 +5,16 @@
 
 using namespace std; 
 
-#include "genetic-algorithm.h"
+//#include "genetic-algorithm.h"
+#include "chromosome.h"
 
 
 #define MAX_SEED 20
 
-int32_t fitnessFunction(vector<int32_t> *variables) {
+double fitnessFunction(Chromosome * chromosome){
 	//http://www.zweigmedia.com/RealWorld/simplex.html
 
-	int32_t x = GeneticAlgorithm::getVariable(variables, 0);
+	/*int32_t x = GeneticAlgorithm::getVariable(variables, 0);
 	int32_t y = GeneticAlgorithm::getVariable(variables, 1);
 	int32_t z = GeneticAlgorithm::getVariable(variables, 2);
 	int32_t w = GeneticAlgorithm::getVariable(variables, 3);
@@ -29,7 +30,7 @@ int32_t fitnessFunction(vector<int32_t> *variables) {
 	If so, the constraint has been violated and we should punish the fitness
 	*/
 
-	if (x + y + z + w > 40) {
+/*	if (x + y + z + w > 40) {
 		violated = true;
 		violations[0] = (x + y + z + w) - 40;
 	}
@@ -85,6 +86,8 @@ int32_t fitnessFunction(vector<int32_t> *variables) {
 	}
 
 	return fitness;
+	*/
+	return 0;
 }
 
 #define IDEAL_FITNESS 14
@@ -98,14 +101,24 @@ int main(){
 
 	vector<Gene> genes;
 
-	Gene *gene = new Gene(INT8);
-
-
+	Gene *gene = NULL;//new Gene(UINT8);
+	gene->setSeedRange(uint8_t(0), uint8_t(20));
 	genes.push_back(*gene);
+
+	gene = new Gene(INT8);
+	gene->setSeedRange(uint8_t(-50), uint8_t(50));
+	genes.push_back(*gene);
+
+	gene = new Gene(FLOAT);
+	gene->setSeedRange(float(0), float(21));
+	
+	genes.push_back(*gene);
+
+	Chromosome ch = new Chromosome(&genes, fitnessFunction);
 
 
 	return 0;
-
+/*
 	GeneticAlgorithm ga;
 
 	ga.setElitism(true);	
@@ -114,7 +127,7 @@ int main(){
 	ga.setMutationRate(0.01f);
 	ga.setMinSeed(0);
 	ga.setMaxSeed(MAX_SEED);
-	ga.setFitnessFunction(fitnessFunction);
+	//ga.setFitnessFunction(fitnessFunction);
 
 	ga.initializePopulation(50, 4);
 
@@ -165,4 +178,5 @@ int main(){
 	
 
     return ga.getFittestIndividual()->getFitness();
+	*/
 }

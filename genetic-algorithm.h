@@ -205,9 +205,6 @@ inline void GeneticAlgorithm::crossOver()
 			childYP = (*gPopulation->getIndividualVector())[i + 1];			
 		}				
 
-		//TODO Treat the situation when i+1 >= popsize takes over the i-1 already constructed child
-		//This isn't really and issue, maybe this isn't a problem at all
-
 		//Crossover each int32 in each Individual
 		crossOverIndividualInt32(parentX, parentY, childXP, childYP);		
 	}

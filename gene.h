@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <climits>
+#include <iostream>
 
 #if CHAR_BIT != 8
 	#pragma message("CHAR_BIT is not 8 bits long. This could lead to erratic behaviour and loss of information.")
@@ -9,24 +10,35 @@
 
 
 enum GeneDataType {
+	UINT8,
 	INT8,
+	UINT16,
 	INT16,
+	UINT32,
 	INT32,
+	UINT64,
 	INT64,
 	FLOAT,
 	DOUBLE,
 	CUSTOM
 };
 
+union SeedValue {
+	float		floatValue;
+	double		doubleValue;
+	int8_t		int8Value;
+	int16_t		int16Value;
+	int32_t		int32Value;
+	int64_t		int64Value;
+	uint8_t		uint8Value;
+	uint16_t	uint16Value;
+	uint32_t	uint32Value;
+	uint64_t	uint64Value;
+};
+
 class Gene {
 
 	protected:
-		union SeedValue {
-			float		floatValue;
-			double		doubleValue;
-			uint64_t	uintValue;
-		};
-
 		vector<unsigned char>	*geneBits = NULL;
 		GeneDataType			dataType;		
 		SeedValue				minSeed, maxSeed;
@@ -36,6 +48,7 @@ class Gene {
 
 	public:
 		Gene(GeneDataType dataTy);
+		Gene(Gene * original);
 		~Gene();
 		GeneDataType	getDataType();
 		uint8_t			getValueUInt8();
@@ -48,11 +61,35 @@ class Gene {
 		int64_t			getValueInt64();
 		float			getValueFloat();
 		double			getValueDouble();
+
+		/*
+		There may be a better way to do these below
+		However, the day I wrote these I was sick and not thinking straight
+		Even if these functions take some, maybe, unnecessary space, they work as intended
+		*/
+		void			setValueInt8(int8_t value); //TODO
+		void			setValueUInt8(uint8_t value);
+		void			setValueInt16(int16_t value);
+		void			setValueUInt16(uint16_t value);
+		void			setValueInt32(int32_t value);
+		void			setValueUInt32(uint32_t value);
+		void			setValueInt64(int64_t value);
+		void			setValueUInt64(uint64_t value);
+		void			setValueFloat(float value);
+		void			setValueDouble(double value);
 		void			setSeedRange(uint64_t lower, uint64_t upper);
 		void			setSeedRange(int64_t lower, int64_t upper);
+		void			setSeedRange(uint32_t lower, uint32_t upper);
+		void			setSeedRange(int32_t lower, int32_t upper);
+		void			setSeedRange(uint16_t lower, uint16_t upper);
+		void			setSeedRange(int16_t lower, int16_t upper);
+		void			setSeedRange(uint8_t lower, uint8_t upper);
+		void			setSeedRange(int8_t lower, int8_t upper);
 		void			setSeedRange(float lower, float upper);
-		void			setSeedRange(double lower, double upper);
+		void			setSeedRange(double lower, double upper);	
 
+		SeedValue		getMinimumSeed();
+		SeedValue		getMaximumSeed();
 };
 
 Gene::Gene(GeneDataType dataTy) {
@@ -65,15 +102,19 @@ Gene::Gene(GeneDataType dataTy) {
 	switch (dataType)
 	{
 		case INT8: 
+		case UINT8:
 			geneBits = new vector<unsigned char>(sizeof(uint8_t) * CHAR_BIT, 0);
 			break;
 		case INT16:
+		case UINT16:
 			geneBits = new vector<unsigned char>(sizeof(uint16_t) * CHAR_BIT, 0);
 			break;
 		case INT32:
+		case UINT32:
 			geneBits = new vector<unsigned char>(sizeof(uint32_t) * CHAR_BIT, 0);
 			break;
 		case INT64:
+		case UINT64:
 			geneBits = new vector<unsigned char>(sizeof(uint64_t) * CHAR_BIT, 0);
 			break;
 		case FLOAT:
@@ -86,9 +127,59 @@ Gene::Gene(GeneDataType dataTy) {
 			if (sizeof(double) != sizeof(uint64_t))
 				cerr << "double is not " << sizeof(uint64_t) << " bytes long  (same as uint64_t). This could lead to erratic behaviour and loss of information." << endl;
 			break;
-		default:
+		default: //TODO
 			break;
 	}
+}
+
+inline Gene::Gene(Gene *original) //Construction from gene model
+{
+	dataType = original->getDataType();	
+
+	switch (dataType)
+	{
+		case INT8:
+		case UINT8:
+			minSeed.uint8Value = original->getMinimumSeed().uint8Value;
+			maxSeed.uint8Value = original->getMinimumSeed().uint8Value;
+			geneBits = new vector<unsigned char>(sizeof(uint8_t) * CHAR_BIT, 0);
+			break;
+		case INT16:
+		case UINT16:
+			minSeed.uint16Value = original->getMinimumSeed().uint16Value;
+			maxSeed.uint16Value = original->getMinimumSeed().uint16Value;
+			geneBits = new vector<unsigned char>(sizeof(uint16_t) * CHAR_BIT, 0);
+			break;
+		case INT32:
+		case UINT32:
+			minSeed.uint32Value = original->getMinimumSeed().uint32Value;
+			maxSeed.uint32Value = original->getMinimumSeed().uint32Value;
+			geneBits = new vector<unsigned char>(sizeof(uint32_t) * CHAR_BIT, 0);
+			break;
+		case INT64:
+		case UINT64:
+			minSeed.uint64Value = original->getMinimumSeed().uint64Value;
+			maxSeed.uint64Value = original->getMinimumSeed().uint64Value;
+			geneBits = new vector<unsigned char>(sizeof(uint64_t) * CHAR_BIT, 0);
+			break;
+		case FLOAT:
+			minSeed.floatValue = original->getMinimumSeed().floatValue;
+			maxSeed.floatValue = original->getMinimumSeed().floatValue;
+			geneBits = new vector<unsigned char>(sizeof(float) * CHAR_BIT, 0);
+			if (sizeof(float) != sizeof(uint32_t))
+				cerr << "float is not " << sizeof(uint32_t) << " bytes long  (same as uint32_t). This could lead to erratic behaviour and loss of information." << endl;
+			break;
+		case DOUBLE:
+			minSeed.doubleValue = original->getMinimumSeed().doubleValue;
+			maxSeed.doubleValue = original->getMinimumSeed().doubleValue;
+			geneBits = new vector<unsigned char>(sizeof(double) * CHAR_BIT, 0);
+			if (sizeof(double) != sizeof(uint64_t))
+				cerr << "double is not " << sizeof(uint64_t) << " bytes long  (same as uint64_t). This could lead to erratic behaviour and loss of information." << endl;
+			break;
+		default: //TODO
+			break;
+	}
+
 }
 
 Gene::~Gene() {
@@ -253,14 +344,50 @@ inline double Gene::getValueDouble()
 
 inline void Gene::setSeedRange(uint64_t lower, uint64_t upper)
 {
-	minSeed.uintValue = lower;
-	maxSeed.uintValue = upper;
+	minSeed.uint64Value = lower;
+	maxSeed.uint64Value = upper;
 }
 
 inline void Gene::setSeedRange(int64_t lower, int64_t upper)
 {
-	minSeed.uintValue = (uint64_t)lower;
-	maxSeed.uintValue = (uint64_t)upper;
+	minSeed.int64Value = lower;
+	maxSeed.int64Value = upper;
+}
+
+inline void Gene::setSeedRange(uint32_t lower, uint32_t upper)
+{
+	minSeed.uint32Value = lower;
+	maxSeed.uint32Value = upper;
+}
+
+inline void Gene::setSeedRange(int32_t lower, int32_t upper)
+{
+	minSeed.int32Value = lower;
+	maxSeed.int32Value = upper;
+}
+
+inline void Gene::setSeedRange(uint16_t lower, uint16_t upper)
+{
+	minSeed.uint16Value = lower;
+	maxSeed.uint16Value = upper;
+}
+
+inline void Gene::setSeedRange(int16_t lower, int16_t upper)
+{
+	minSeed.int16Value = lower;
+	maxSeed.int16Value = upper;
+}
+
+inline void Gene::setSeedRange(uint8_t lower, uint8_t upper)
+{
+	minSeed.uint8Value = lower;
+	maxSeed.uint8Value = upper;
+}
+
+inline void Gene::setSeedRange(int8_t lower, int8_t upper)
+{
+	minSeed.int8Value = lower;
+	maxSeed.int8Value = upper;
 }
 
 inline void Gene::setSeedRange(float lower, float upper)
@@ -273,4 +400,14 @@ inline void Gene::setSeedRange(double lower, double upper)
 {
 	minSeed.doubleValue = lower;
 	minSeed.doubleValue = upper;
+}
+
+inline SeedValue Gene::getMinimumSeed()
+{
+	return minSeed;
+}
+
+inline SeedValue Gene::getMaximumSeed()
+{
+	return maxSeed;
 }

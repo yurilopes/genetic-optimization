@@ -4,6 +4,9 @@
 #include <climits>
 #include <iostream>
 
+#define ERR_DOUBLE_SIZEMISMATCH "double is not " << sizeof(uint64_t) << " bytes long  (same as uint64_t). This could lead to erratic behaviour and loss of information."
+#define ERR_FLOAT_SIZEMISMATCH "float is not " << sizeof(uint32_t) << " bytes long  (same as uint32_t). This could lead to erratic behaviour and loss of information."
+
 #if CHAR_BIT != 8
 	#pragma message("CHAR_BIT is not 8 bits long. This could lead to erratic behaviour and loss of information.")
 #endif // CHAR_BIT != 8
@@ -41,7 +44,8 @@ class Gene {
 	protected:
 		vector<unsigned char>	*geneBits = NULL;
 		GeneDataType			dataType;		
-		SeedValue				minSeed, maxSeed;
+		SeedValue				minSeed;
+		SeedValue				maxSeed;
 		
 		//Properties for CUSTOM data type
 		uint64_t				lowerBound, upperBound;
@@ -117,15 +121,15 @@ Gene::Gene(GeneDataType dataTy) {
 		case UINT64:
 			geneBits = new vector<unsigned char>(sizeof(uint64_t) * CHAR_BIT, 0);
 			break;
-		case FLOAT:
-			geneBits = new vector<unsigned char>(sizeof(float) * CHAR_BIT, 0);
+		case FLOAT:			
 			if (sizeof(float) != sizeof(uint32_t))
-				cerr << "float is not " << sizeof(uint32_t) << " bytes long  (same as uint32_t). This could lead to erratic behaviour and loss of information." << endl;
+				cerr << ERR_FLOAT_SIZEMISMATCH << endl;
+			geneBits = new vector<unsigned char>(sizeof(float) * CHAR_BIT, 0);
 			break;
-		case DOUBLE:
-			geneBits = new vector<unsigned char>(sizeof(double) * CHAR_BIT, 0);
+		case DOUBLE:			
 			if (sizeof(double) != sizeof(uint64_t))
-				cerr << "double is not " << sizeof(uint64_t) << " bytes long  (same as uint64_t). This could lead to erratic behaviour and loss of information." << endl;
+				cerr << ERR_DOUBLE_SIZEMISMATCH << endl;
+			geneBits = new vector<unsigned char>(sizeof(double) * CHAR_BIT, 0);
 			break;
 		default: //TODO
 			break;
@@ -141,37 +145,37 @@ inline Gene::Gene(Gene *original) //Construction from gene model
 		case INT8:
 		case UINT8:
 			minSeed.uint8Value = original->getMinimumSeed().uint8Value;
-			maxSeed.uint8Value = original->getMinimumSeed().uint8Value;
+			maxSeed.uint8Value = original->getMaximumSeed().uint8Value;
 			geneBits = new vector<unsigned char>(sizeof(uint8_t) * CHAR_BIT, 0);
 			break;
 		case INT16:
 		case UINT16:
 			minSeed.uint16Value = original->getMinimumSeed().uint16Value;
-			maxSeed.uint16Value = original->getMinimumSeed().uint16Value;
+			maxSeed.uint16Value = original->getMaximumSeed().uint16Value;
 			geneBits = new vector<unsigned char>(sizeof(uint16_t) * CHAR_BIT, 0);
 			break;
 		case INT32:
 		case UINT32:
 			minSeed.uint32Value = original->getMinimumSeed().uint32Value;
-			maxSeed.uint32Value = original->getMinimumSeed().uint32Value;
+			maxSeed.uint32Value = original->getMaximumSeed().uint32Value;
 			geneBits = new vector<unsigned char>(sizeof(uint32_t) * CHAR_BIT, 0);
 			break;
 		case INT64:
 		case UINT64:
 			minSeed.uint64Value = original->getMinimumSeed().uint64Value;
-			maxSeed.uint64Value = original->getMinimumSeed().uint64Value;
+			maxSeed.uint64Value = original->getMaximumSeed().uint64Value;
 			geneBits = new vector<unsigned char>(sizeof(uint64_t) * CHAR_BIT, 0);
 			break;
 		case FLOAT:
 			minSeed.floatValue = original->getMinimumSeed().floatValue;
-			maxSeed.floatValue = original->getMinimumSeed().floatValue;
+			maxSeed.floatValue = original->getMaximumSeed().floatValue;
 			geneBits = new vector<unsigned char>(sizeof(float) * CHAR_BIT, 0);
 			if (sizeof(float) != sizeof(uint32_t))
 				cerr << "float is not " << sizeof(uint32_t) << " bytes long  (same as uint32_t). This could lead to erratic behaviour and loss of information." << endl;
 			break;
 		case DOUBLE:
 			minSeed.doubleValue = original->getMinimumSeed().doubleValue;
-			maxSeed.doubleValue = original->getMinimumSeed().doubleValue;
+			maxSeed.doubleValue = original->getMaximumSeed().doubleValue;
 			geneBits = new vector<unsigned char>(sizeof(double) * CHAR_BIT, 0);
 			if (sizeof(double) != sizeof(uint64_t))
 				cerr << "double is not " << sizeof(uint64_t) << " bytes long  (same as uint64_t). This could lead to erratic behaviour and loss of information." << endl;
@@ -410,4 +414,68 @@ inline SeedValue Gene::getMinimumSeed()
 inline SeedValue Gene::getMaximumSeed()
 {
 	return maxSeed;
+}
+
+inline void Gene::setValueUInt8(uint8_t value) {	
+	int j = 0;
+	while (value) {
+		(*geneBits)[j] = (value & 1);
+		value >>= 1;		
+		j++;
+	}
+}
+
+inline void Gene::setValueInt8(int8_t value) {
+	setValueUInt8((uint8_t)value);
+}
+
+inline void Gene::setValueUInt16(uint16_t value) {
+	int j = 0;
+	while (value) {
+		(*geneBits)[j] = (value & 1);
+		value >>= 1;
+		j++;
+	}
+}
+
+inline void Gene::setValueInt16(int16_t value) {
+	setValueUInt16((uint16_t)value);
+}
+
+inline void Gene::setValueUInt32(uint32_t value) {
+	int j = 0;
+	while (value) {
+		(*geneBits)[j] = (value & 1);
+		value >>= 1;
+		j++;
+	}
+}
+
+inline void Gene::setValueInt32(int32_t value) {
+	setValueUInt32((uint32_t)value);
+}
+
+inline void Gene::setValueUInt64(uint64_t value) {
+	int j = 0;
+	while (value) {
+		(*geneBits)[j] = (value & 1ui64);
+		value >>= 1;
+		j++;
+	}
+}
+
+inline void Gene::setValueInt64(int64_t value) {
+	setValueUInt64((uint64_t)value);
+}
+
+inline void Gene::setValueFloat(float value) {
+	if (sizeof(float) != sizeof(uint32_t))
+		cerr << "float is not " << sizeof(uint32_t) << " bytes long  (same as uint32_t). This could lead to erratic behaviour and loss of information." << endl;
+	setValueUInt32(*(uint32_t *)(&value));
+}
+
+inline void Gene::setValueDouble(double value) {
+	if (sizeof(double) != sizeof(uint64_t))
+		cerr << ERR_DOUBLE_SIZEMISMATCH << endl;
+	setValueUInt64(*(uint64_t *)(&value));
 }

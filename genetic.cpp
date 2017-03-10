@@ -99,23 +99,34 @@ int main(){
     Each problem variable/gene is an int
     */
 
-	vector<Gene> genes;
+	vector<Gene *> genes;
 
-	Gene *gene = NULL;//new Gene(UINT8);
-	gene->setSeedRange(uint8_t(0), uint8_t(20));
-	genes.push_back(*gene);
-
+	Gene *gene = new Gene(UINT8);
+	gene->setSeedRange(uint8_t(0), uint8_t(20));	
+	genes.push_back(gene);
+	
 	gene = new Gene(INT8);
-	gene->setSeedRange(uint8_t(-50), uint8_t(50));
-	genes.push_back(*gene);
-
+	gene->setSeedRange(int8_t(-50), int8_t(50));
+	genes.push_back(gene);
+	
+	
 	gene = new Gene(FLOAT);
 	gene->setSeedRange(float(0), float(21));
 	
-	genes.push_back(*gene);
+	genes.push_back(gene);
+	
+	
+	Chromosome ch(&genes, fitnessFunction);	
 
-	Chromosome ch = new Chromosome(&genes, fitnessFunction);
-
+	for (size_t i = 0; i < genes.size(); i++) {
+		Gene *g = (*ch.getGenes())[i];		
+		if (g->getDataType() == FLOAT)
+			cout << i << ": " << g->getDataType() << " {" << g->getValueFloat() << "} - [" << dec << (int16_t)g->getMinimumSeed().int8Value << ", " << g->getMaximumSeed().floatValue;					
+		else
+			cout << i << ": " << g->getDataType() << " {" << (int16_t)g->getValueInt8() << "} - [" << dec << (int16_t)g->getMinimumSeed().int8Value << ", " << (int16_t)g->getMaximumSeed().int8Value;
+		cout << "]" << endl;
+		
+	}
 
 	return 0;
 /*

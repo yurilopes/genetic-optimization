@@ -15,19 +15,20 @@ typedef double(*FitnessFunction)(Chromosome * chromosome);
 
 class Chromosome{
     protected:
-        vector<Gene>		*genes;
+        vector<Gene *>		*genes;
         double				fitness;
 		double				accFitness;
 		double				accNormalizedFitness;
         FitnessFunction		fitnessFunction;
-		vector<Gene>		*geneModel;
+		vector<Gene *>		*geneModel;
 		
 
     public:
-        Chromosome(vector<Gene> * geneModel, FitnessFunction fitFunction);
+        Chromosome(vector<Gene *> * geneModel, FitnessFunction fitFunction);
 		Chromosome(Chromosome * original);
         ~Chromosome();
-        vector<Gene>* getGenes();
+        vector<Gene *> *getGenes();
+		vector<Gene *> *getGeneModel();
 		void setChromosome(Chromosome &chm);
 		double calculateFitness();
 		double addToAccFitness(double value);
@@ -44,13 +45,13 @@ class Chromosome{
 };
 
 
-Chromosome::Chromosome(vector<Gene> * genModel, FitnessFunction fitFunction){	
-	geneModel = genModel;
-	genes = new vector<Gene>();
+Chromosome::Chromosome(vector<Gene *> * genModel, FitnessFunction fitFunction){		
+	geneModel = genModel;	
+	genes = new vector<Gene *>();
 	
 	for (unsigned int i = 0; i < genModel->size(); i++) {
-		Gene gModel = (*genModel)[i];
-		Gene *newGene = new Gene(&gModel);
+		Gene * gModel = (*genModel)[i];
+		Gene *newGene = new Gene(gModel);		
 		switch (newGene->getDataType())
 		{
 			case (FLOAT): {
@@ -70,7 +71,6 @@ Chromosome::Chromosome(vector<Gene> * genModel, FitnessFunction fitFunction){
 				/*
 				Should never cause loss of data, since seed values are within the 8 bit range
 				*/
-
 				newGene->setValueUInt8(randomI16(genGA));
 				#pragma warning(pop)
 				break;
@@ -98,19 +98,31 @@ Chromosome::Chromosome(vector<Gene> * genModel, FitnessFunction fitFunction){
 				#pragma warning(pop)
 				break;
 			}
-			case (INT16):
+			case (INT16): {
+				uniform_int_distribution<int16_t> randomI16(newGene->getMinimumSeed().int16Value, newGene->getMaximumSeed().int16Value);
+				newGene->setValueInt16(randomI16(genGA));
+				break;
+			}
 			case (UINT16): {
 				uniform_int_distribution<uint16_t> randomI16(newGene->getMinimumSeed().uint16Value, newGene->getMaximumSeed().uint16Value);
 				newGene->setValueUInt16(randomI16(genGA));
 				break;
 			}
-			case (INT32):
+			case (INT32): {
+				uniform_int_distribution<int32_t> randomI32(newGene->getMinimumSeed().int32Value, newGene->getMaximumSeed().int32Value);
+				newGene->setValueInt32(randomI32(genGA));
+				break;
+			}
 			case (UINT32): {
 				uniform_int_distribution<uint32_t> randomI32(newGene->getMinimumSeed().uint32Value, newGene->getMaximumSeed().uint32Value);
 				newGene->setValueUInt32(randomI32(genGA));
 				break;
 			}
-			case (INT64):
+			case (INT64): {
+				uniform_int_distribution<int64_t> randomI64(newGene->getMinimumSeed().int64Value, newGene->getMaximumSeed().int64Value);
+				newGene->setValueInt64(randomI64(genGA));
+				break;
+			}
 			case (UINT64): {
 				uniform_int_distribution<uint64_t> randomI64(newGene->getMinimumSeed().uint64Value, newGene->getMaximumSeed().uint64Value);
 				newGene->setValueUInt64(randomI64(genGA));
@@ -137,20 +149,25 @@ inline Chromosome::Chromosome(Chromosome * original)
 	fitnessFunction = original->getFitnessFunction();
 
 	//Clone the vector
-	genes = new vector<Gene>(*original->getGenes());
+	genes = new vector<Gene *>(*original->getGenes());
 }
 
 Chromosome::~Chromosome(){
     delete genes;
 }
 
-vector<Gene>* Chromosome::getGenes(){
-    return genes;
+vector<Gene *> * Chromosome::getGenes(){
+    return genes;	
+}
+
+inline vector<Gene*> * Chromosome::getGeneModel()
+{
+	return geneModel;
 }
 
 inline void Chromosome::setChromosome(Chromosome &chm)
 {
-	vector<Gene> * ind = chm.getGenes();
+	vector<Gene *> * ind = chm.getGenes();
 	if (genes != NULL)
 		delete genes;
 	genes = ind;
@@ -186,44 +203,44 @@ void Chromosome::setAccNormalizedFitness(double fit)
 
 inline void Chromosome::print()
 {
-	for (vector<Gene>::iterator it = genes->begin(); it != genes->end(); it++) {
-		Gene gen = *it;
-		switch (gen.getDataType()) {
+	for (vector<Gene *>::iterator it = genes->begin(); it != genes->end(); it++) {
+		Gene * gen = *it;
+		switch (gen->getDataType()) {
 			case INT8:	
-				printf("%6" PRIi8 , gen.getValueInt8());
+				printf("%6" PRIi8 , gen->getValueInt8());
 				break;
 			case UINT8:
-				printf("%6" PRIu8, gen.getValueUInt8());
+				printf("%6" PRIu8, gen->getValueUInt8());
 				break;
 			case INT16:
-				printf("%6" PRIi16, gen.getValueInt16());
+				printf("%6" PRIi16, gen->getValueInt16());
 				break;
 			case UINT16:
-				printf("%6" PRIu16, gen.getValueUInt16());
+				printf("%6" PRIu16, gen->getValueUInt16());
 				break;
 			case INT32:
-				printf("%6" PRIi32, gen.getValueInt32());
+				printf("%6" PRIi32, gen->getValueInt32());
 			case UINT32:
-				printf("%6" PRIu32, gen.getValueUInt32());
+				printf("%6" PRIu32, gen->getValueUInt32());
 				break;
 			case INT64:
-				printf("%6" PRIi64, gen.getValueInt64());
+				printf("%6" PRIi64, gen->getValueInt64());
 			case UINT64:
-				printf("%6" PRIu64, gen.getValueUInt64());
+				printf("%6" PRIu64, gen->getValueUInt64());
 				break;
 			case FLOAT:
-				printf("%6.3f", gen.getValueFloat());
+				printf("%6.3f", gen->getValueFloat());
 				break;
 			case DOUBLE:			
-				printf("%6.3f", gen.getValueDouble());
+				printf("%6.3f", gen->getValueDouble());
 				break;
 			case CUSTOM:
-				cout << uppercase << hex << gen.getValueUInt64();
+				std::cout << uppercase << hex << gen->getValueUInt64() << dec;
 				break;			
 		}		
-		cout << ", \t";
+		std::cout << ", \t";
 	}
-	cout << "F=" << fitness << endl;;	
+	std::cout << "F=" << fitness << endl;;
 }
 
 inline bool Chromosome::equals(Chromosome * ind)
@@ -238,8 +255,8 @@ inline bool Chromosome::equals(Chromosome * ind)
 		This comparison should work given the way the data is stored in memory
 		*/	
 		if (
-			((*genes)[i].getDataType() == (*ind->getGenes())[i].getDataType()) ||
-			((*genes)[i].getValueUInt64() != (*ind->getGenes())[i].getValueUInt64())
+			((*genes)[i]->getDataType() == (*ind->getGenes())[i]->getDataType()) ||
+			((*genes)[i]->getValueUInt64() != (*ind->getGenes())[i]->getValueUInt64())
 			)
 			return false;
 	}

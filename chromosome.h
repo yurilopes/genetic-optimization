@@ -6,11 +6,11 @@
 #include <ctime>
 #include <random>
 #include "gene.h"
-#include "chromosome.h"
+
+extern mt19937 genGA;
 
 class Chromosome; //Forward declaration of Chromosome class for FitnessFunction typedef
 
-mt19937 genGA(static_cast<unsigned int>(std::time(0)));
 typedef double(*FitnessFunction)(Chromosome * chromosome);
 
 class Chromosome{
@@ -29,7 +29,7 @@ class Chromosome{
         ~Chromosome();
         vector<Gene *> *getGenes();
 		vector<Gene *> *getGeneModel();
-		void setChromosome(Chromosome &chm);
+		void setChromosome(Chromosome * chm);
 		double calculateFitness();
 		double addToAccFitness(double value);
         double getFitness();
@@ -148,12 +148,27 @@ inline Chromosome::Chromosome(Chromosome * original)
 	accNormalizedFitness = original->getAccNormalizedFitness();
 	fitnessFunction = original->getFitnessFunction();
 
-	//Clone the vector
-	genes = new vector<Gene *>(*original->getGenes());
+	/*
+	Now we clone the gene vector.
+	A simple
+		genes = new vector<Gene *>(*original->getGenes());
+	won't do!
+
+	We have to create copies of each gene. Ohterwise we are just copying pointers and the objects themselves still have only one instance
+		in memory.
+	We want to create copies of the Gene objects' instances.
+	*/
+	genes = new vector<Gene *>();
+	for (vector<Gene *>::iterator it = original->getGenes()->begin(); it != original->getGenes()->end(); it++) {
+		Gene *gen = *it;
+		Gene *newGene = new Gene(gen);
+		genes->push_back(newGene);
+	}	
 }
 
 Chromosome::~Chromosome(){
-    delete genes;
+    if(genes)
+		delete genes;
 }
 
 vector<Gene *> * Chromosome::getGenes(){
@@ -165,12 +180,13 @@ inline vector<Gene*> * Chromosome::getGeneModel()
 	return geneModel;
 }
 
-inline void Chromosome::setChromosome(Chromosome &chm)
+inline void Chromosome::setChromosome(Chromosome *chm)
 {
-	vector<Gene *> * ind = chm.getGenes();
+	vector<Gene *> * ind = chm->getGenes();
 	if (genes != NULL)
 		delete genes;
 	genes = ind;
+	geneModel = chm->getGeneModel();
 }
 
 double Chromosome::getFitness(){
@@ -245,8 +261,8 @@ inline void Chromosome::print()
 
 inline bool Chromosome::equals(Chromosome * ind)
 {
-	if (genes->size() != ind->getGenes()->size())
-		return false;
+	if (genes->size() != ind->getGenes()->size())		
+		return false;	
 	
 	for (unsigned int i = 0; i < genes->size(); i++) {
 		/*
@@ -255,12 +271,11 @@ inline bool Chromosome::equals(Chromosome * ind)
 		This comparison should work given the way the data is stored in memory
 		*/	
 		if (
-			((*genes)[i]->getDataType() == (*ind->getGenes())[i]->getDataType()) ||
+			((*genes)[i]->getDataType() != (*ind->getGenes())[i]->getDataType()) ||
 			((*genes)[i]->getValueUInt64() != (*ind->getGenes())[i]->getValueUInt64())
 			)
 			return false;
 	}
-
 	return true;
 
 }

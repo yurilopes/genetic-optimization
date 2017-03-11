@@ -26,7 +26,7 @@ enum GeneDataType {
 	CUSTOM
 };
 
-union SeedValue {
+union GeneValue {
 	float		floatValue;
 	double		doubleValue;
 	int8_t		int8Value;
@@ -44,8 +44,8 @@ class Gene {
 	protected:
 		vector<unsigned char>	*geneBits = NULL;
 		GeneDataType			dataType;		
-		SeedValue				minSeed;
-		SeedValue				maxSeed;
+		GeneValue				minSeed;
+		GeneValue				maxSeed;
 		
 		//Properties for CUSTOM data type
 		uint64_t				lowerBound, upperBound;
@@ -54,6 +54,7 @@ class Gene {
 		Gene(GeneDataType dataTy);
 		Gene(Gene * original);
 		~Gene();
+		vector<unsigned char> *getGeneBits();
 		GeneDataType	getDataType();
 		uint8_t			getValueUInt8();
 		int8_t			getValueInt8();
@@ -92,8 +93,10 @@ class Gene {
 		void			setSeedRange(float lower, float upper);
 		void			setSeedRange(double lower, double upper);	
 
-		SeedValue		getMinimumSeed();
-		SeedValue		getMaximumSeed();
+		GeneValue		getMinimumSeed();
+		GeneValue		getMaximumSeed();
+
+		void			printBits();
 };
 
 Gene::Gene(GeneDataType dataTy) {
@@ -146,37 +149,37 @@ inline Gene::Gene(Gene *original) //Construction from gene model
 		case UINT8:
 			minSeed.uint8Value = original->getMinimumSeed().uint8Value;
 			maxSeed.uint8Value = original->getMaximumSeed().uint8Value;
-			geneBits = new vector<unsigned char>(sizeof(uint8_t) * CHAR_BIT, 0);
+			geneBits = new vector<unsigned char>(*original->getGeneBits());
 			break;
 		case INT16:
 		case UINT16:
 			minSeed.uint16Value = original->getMinimumSeed().uint16Value;
 			maxSeed.uint16Value = original->getMaximumSeed().uint16Value;
-			geneBits = new vector<unsigned char>(sizeof(uint16_t) * CHAR_BIT, 0);
+			geneBits = new vector<unsigned char>(*original->getGeneBits());
 			break;
 		case INT32:
 		case UINT32:
 			minSeed.uint32Value = original->getMinimumSeed().uint32Value;
 			maxSeed.uint32Value = original->getMaximumSeed().uint32Value;
-			geneBits = new vector<unsigned char>(sizeof(uint32_t) * CHAR_BIT, 0);
+			geneBits = new vector<unsigned char>(*original->getGeneBits());
 			break;
 		case INT64:
 		case UINT64:
 			minSeed.uint64Value = original->getMinimumSeed().uint64Value;
 			maxSeed.uint64Value = original->getMaximumSeed().uint64Value;
-			geneBits = new vector<unsigned char>(sizeof(uint64_t) * CHAR_BIT, 0);
+			geneBits = new vector<unsigned char>(*original->getGeneBits());
 			break;
 		case FLOAT:
 			minSeed.floatValue = original->getMinimumSeed().floatValue;
 			maxSeed.floatValue = original->getMaximumSeed().floatValue;
-			geneBits = new vector<unsigned char>(sizeof(float) * CHAR_BIT, 0);
+			geneBits = new vector<unsigned char>(*original->getGeneBits());
 			if (sizeof(float) != sizeof(uint32_t))
 				cerr << "float is not " << sizeof(uint32_t) << " bytes long  (same as uint32_t). This could lead to erratic behaviour and loss of information." << endl;
 			break;
 		case DOUBLE:
 			minSeed.doubleValue = original->getMinimumSeed().doubleValue;
 			maxSeed.doubleValue = original->getMaximumSeed().doubleValue;
-			geneBits = new vector<unsigned char>(sizeof(double) * CHAR_BIT, 0);
+			geneBits = new vector<unsigned char>(*original->getGeneBits());
 			if (sizeof(double) != sizeof(uint64_t))
 				cerr << "double is not " << sizeof(uint64_t) << " bytes long  (same as uint64_t). This could lead to erratic behaviour and loss of information." << endl;
 			break;
@@ -189,6 +192,11 @@ inline Gene::Gene(Gene *original) //Construction from gene model
 Gene::~Gene() {
 	if (geneBits)
 		delete geneBits;
+}
+
+inline vector<unsigned char>* Gene::getGeneBits()
+{
+	return geneBits;
 }
 
 inline GeneDataType Gene::getDataType()
@@ -406,14 +414,23 @@ inline void Gene::setSeedRange(double lower, double upper)
 	minSeed.doubleValue = upper;
 }
 
-inline SeedValue Gene::getMinimumSeed()
+inline GeneValue Gene::getMinimumSeed()
 {
 	return minSeed;
 }
 
-inline SeedValue Gene::getMaximumSeed()
+inline GeneValue Gene::getMaximumSeed()
 {
 	return maxSeed;
+}
+
+inline void Gene::printBits()
+{
+	if (!geneBits)
+		return;
+	for (vector<unsigned char>::iterator it = geneBits->begin(); it != geneBits->end(); it++)
+		cout << (uint16_t)*it << ", ";
+	cout << "\b\b  " << endl;
 }
 
 inline void Gene::setValueUInt8(uint8_t value) {	

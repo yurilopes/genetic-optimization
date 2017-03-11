@@ -6,20 +6,18 @@
 using namespace std; 
 
 //#include "genetic-algorithm.h"
-#include "chromosome.h"
+#include "genetic-algorithm.h"
 
-
-#define MAX_SEED 20
-
-double fitnessFunction(Chromosome * chromosome){
+double fitnessFunction(Chromosome * chromosome){	
 	//http://www.zweigmedia.com/RealWorld/simplex.html
 
-	/*int32_t x = GeneticAlgorithm::getVariable(variables, 0);
-	int32_t y = GeneticAlgorithm::getVariable(variables, 1);
-	int32_t z = GeneticAlgorithm::getVariable(variables, 2);
-	int32_t w = GeneticAlgorithm::getVariable(variables, 3);
+	uint8_t x = (*chromosome->getGenes())[0]->getValueUInt8();
+	uint8_t y = (*chromosome->getGenes())[1]->getValueUInt8();
+	uint8_t z = (*chromosome->getGenes())[2]->getValueUInt8();
+	uint8_t w = (*chromosome->getGenes())[3]->getValueUInt8();
+	
 
-	int32_t fitness = (x / 2) + 3 * y + z + 4 * w;
+	double fitness = (x / 2) + 3 * y + z + 4 * w;
 	//Optimal Solution: p = 115; x = 10, y = 10, z = 0, w = 20
 
 	bool violated = false;
@@ -30,15 +28,15 @@ double fitnessFunction(Chromosome * chromosome){
 	If so, the constraint has been violated and we should punish the fitness
 	*/
 
-/*	if (x + y + z + w > 40) {
+	if (x + y + z + w > 40) {		
 		violated = true;
 		violations[0] = (x + y + z + w) - 40;
 	}
-	if (2 * x + y - z - w < 10) {
+	if (2 * x + y - z - w < 10) {		
 		violated = true;
 		violations[1] = 10 - (2 * x + y - z - w);
 	}
-	if (w - y < 10) {
+	if (w - y < 10) {		
 		violated = true;
 		violations[2] = 10 - (w - y);
 	}
@@ -59,88 +57,62 @@ double fitnessFunction(Chromosome * chromosome){
 		violated = true;
 		violations[6] = -w;
 	}
-	if (x > MAX_SEED) {
-		violated = true;
-		violations[7] = x-MAX_SEED;
-	}
-	if (y > MAX_SEED) {
-		violated = true;
-		violations[8] = y - MAX_SEED;
-	}
-	if (z > MAX_SEED) {
-		violated = true;
-		violations[9] = z - MAX_SEED;
-	}
-	if (w > MAX_SEED) {
-		violated = true;
-		violations[10] = w - MAX_SEED;
-	}
 
 	if (violated) {		
 		fitness = 0;
 		for (int i = 0; i < 7; i++)
 			fitness -= abs(violations[i]);
-		for (int i = 3; i < 11; i++)
-			if (violations[i] != 0)
-				return -9999;
 	}
 
-	return fitness;
-	*/
-	return 0;
+	return fitness;	
 }
 
-#define IDEAL_FITNESS 14
+#define IDEAL_FITNESS 115
+#define MAX_SEED 20
+#define POPULATION_SIZE 200
 
 int main(){
-    /*
-    A population is vector of individuals
-    Each individual is vector of ints
-    Each problem variable/gene is an int
-    */
 
+	/*
+	First we create our chromosome model's genes
+
+	We are declaring below that our chromosomes will look like this:
+
+	CHROMOSOME = [UINT8 variable] [UINT8 variable] [UINT8 variable] [UINT8 variable]
+	*/
 	vector<Gene *> genes;
 
 	Gene *gene = new Gene(UINT8);
-	gene->setSeedRange(uint8_t(0), uint8_t(20));	
+	gene->setSeedRange(uint8_t(0), uint8_t(MAX_SEED));
 	genes.push_back(gene);
 	
-	gene = new Gene(INT8);
-	gene->setSeedRange(int8_t(-50), int8_t(50));
+	gene = new Gene(UINT8);
+	gene->setSeedRange(uint8_t(0), uint8_t(MAX_SEED));
 	genes.push_back(gene);
-	
-	
-	gene = new Gene(FLOAT);
-	gene->setSeedRange(float(0), float(21));
-	
-	genes.push_back(gene);
-	
-	
-	Chromosome ch(&genes, fitnessFunction);	
 
-	for (size_t i = 0; i < genes.size(); i++) {
-		Gene *g = (*ch.getGenes())[i];		
-		if (g->getDataType() == FLOAT)
-			cout << i << ": " << g->getDataType() << " {" << g->getValueFloat() << "} - [" << dec << (int16_t)g->getMinimumSeed().int8Value << ", " << g->getMaximumSeed().floatValue;					
-		else
-			cout << i << ": " << g->getDataType() << " {" << (int16_t)g->getValueInt8() << "} - [" << dec << (int16_t)g->getMinimumSeed().int8Value << ", " << (int16_t)g->getMaximumSeed().int8Value;
-		cout << "]" << endl;
+	gene = new Gene(UINT8);
+	gene->setSeedRange(uint8_t(0), uint8_t(MAX_SEED));
+	genes.push_back(gene);
+
+	gene = new Gene(UINT8);
+	gene->setSeedRange(uint8_t(0), uint8_t(MAX_SEED));
+	genes.push_back(gene);
+
+	/*
+	Then we begin our GA setup
+	*/
 		
-	}
-
-	return 0;
-/*
-	GeneticAlgorithm ga;
+	GeneticAlgorithm ga(&genes);	
 
 	ga.setElitism(true);	
 	ga.setEliteSize(5);
+	
 	ga.setMutation(true);
-	ga.setMutationRate(0.01f);
-	ga.setMinSeed(0);
-	ga.setMaxSeed(MAX_SEED);
-	//ga.setFitnessFunction(fitnessFunction);
+	ga.setMutationRate(0.1f);
+	
+	ga.setFitnessFunction(fitnessFunction);
 
-	ga.initializePopulation(50, 4);
+	ga.initializePopulation(POPULATION_SIZE);	
 
 	clock_t timeBegin = clock(); //Starting time
 
@@ -150,12 +122,12 @@ int main(){
 		if (i % 50 == 0) {
 			cout << "Iteration " << i << endl;
 			cout << "Fittest individual:" << endl;
-			ga.printFittestIndividual();					
+			ga.printFittestChromosome();					
 		}
 
 		ga.calculateFitness();
 
-		if (ga.getFittestIndividual()->getFitness() == IDEAL_FITNESS) 
+		if (ga.getFittestChromosome()->getFitness() == IDEAL_FITNESS)
 			break;
 
 		ga.selectionRoulette();	
@@ -182,12 +154,12 @@ int main(){
 	cout << "Elapsed time: " << timeSpent << endl;
 	cout << endl << "Final fittest individual: " << endl;
 	ga.calculateFitness();
-	ga.printFittestIndividual();
+	ga.printFittestChromosome();
 	cout << endl;
 	//ga.printPopulation();
 
 	
 
-    return ga.getFittestIndividual()->getFitness();
-	*/
+    return (int)ga.getFittestChromosome()->getFitness();
+	
 }

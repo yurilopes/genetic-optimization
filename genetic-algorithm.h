@@ -1,9 +1,15 @@
+#pragma once
+
 #include <list>
 #include <vector>
 #include <bitset>
 #include <random>
 #include <ctime>
 #include <limits>
+
+#if CHAR_BIT != 8
+#pragma message("CHAR_BIT is not 8 bits long. This could lead to erratic behaviour and loss of information.")
+#endif // CHAR_BIT != 8
 
 #include "population.h"
 
@@ -388,88 +394,7 @@ inline void GeneticAlgorithm::mutateUniform(Chromosome * chromosome)
 	vector<Gene *> *genes = chromosome->getGenes();
 	for (vector<Gene *>::iterator it = genes->begin(); it != genes->end(); it++) {
 		Gene * gene = *it;
-
-		switch (gene->getDataType())
-		{
-			case (FLOAT): {
-				uniform_real_distribution<float> randomF(gene->getMinimumSeed().floatValue, gene->getMaximumSeed().floatValue);
-				gene->setValueFloat(randomF(genGA));
-				break;
-			}
-			case (DOUBLE): {
-				uniform_real_distribution<double> randomD(gene->getMinimumSeed().doubleValue, gene->getMaximumSeed().doubleValue);
-				gene->setValueDouble(randomD(genGA));
-				break;
-			}
-			case (INT8): {
-				uniform_int_distribution<int16_t> randomI16(gene->getMinimumSeed().int8Value, gene->getMaximumSeed().int8Value);
-				#pragma warning(push)
-				#pragma warning(disable : 4244)
-				/*
-				Should never cause loss of data, since seed values are within the 8 bit range
-				*/
-				gene->setValueUInt8(randomI16(genGA));
-				#pragma warning(pop)
-				break;
-			}
-			case (UINT8): {
-				/*
-				Can't have a uniform_int_distribution<uint8_t> because:
-
-				It seems that this library implementaion behaviour does not violate the ISO C++ standard, because (26.5.1.1)
-				"effect of instantiating a template ... that has a template type parameter named IntType __is undefined unless__ the
-				corresponding template argument is cv-unqualified
-				and __is one of short, int, long, long long, unsigned short, unsigned int, unsigned long, or unsigned long long__",
-				char is not listed.
-
-				More info at: http://stackoverflow.com/questions/31460733/why-arent-stduniform-int-distributionuint8-t-and-stduniform-int-distri
-				*/
-				uniform_int_distribution<uint16_t> randomI16(gene->getMinimumSeed().uint8Value, gene->getMaximumSeed().uint8Value);
-				#pragma warning(push)
-				#pragma warning(disable : 4244)
-				/*
-				Should never cause loss of data, since seed values are within the 8 bit range
-				*/
-
-				gene->setValueUInt8(randomI16(genGA));
-				#pragma warning(pop)
-				break;
-			}
-			case (INT16): {
-				uniform_int_distribution<int16_t> randomI16(gene->getMinimumSeed().int16Value, gene->getMaximumSeed().int16Value);
-				gene->setValueInt16(randomI16(genGA));
-				break;
-			}
-			case (UINT16): {
-				uniform_int_distribution<uint16_t> randomI16(gene->getMinimumSeed().uint16Value, gene->getMaximumSeed().uint16Value);
-				gene->setValueUInt16(randomI16(genGA));
-				break;
-			}
-			case (INT32): {
-				uniform_int_distribution<int32_t> randomI32(gene->getMinimumSeed().int32Value, gene->getMaximumSeed().int32Value);
-				gene->setValueInt32(randomI32(genGA));
-				break;
-			}
-			case (UINT32): {
-				uniform_int_distribution<uint32_t> randomI32(gene->getMinimumSeed().uint32Value, gene->getMaximumSeed().uint32Value);
-				gene->setValueUInt32(randomI32(genGA));
-				break;
-			}
-			case (INT64): {
-				uniform_int_distribution<int64_t> randomI64(gene->getMinimumSeed().int64Value, gene->getMaximumSeed().int64Value);
-				gene->setValueInt64(randomI64(genGA));
-				break;
-			}
-			case (UINT64): {
-				uniform_int_distribution<uint64_t> randomI64(gene->getMinimumSeed().uint64Value, gene->getMaximumSeed().uint64Value);
-				gene->setValueUInt64(randomI64(genGA));
-				break;
-			}
-			default: {
-				//TODO: Set value for CUSTOM data type
-				break;
-			}
-		}
+		gene->initialize();
 	}
 	
 }
@@ -502,15 +427,17 @@ void GeneticAlgorithm::crossOverUniform(Chromosome * parentX, Chromosome * paren
 
 		Gene *genXV = (*childXGenes)[i];
 		Gene *genYV = (*childYGenes)[i];
+		//TODO
+		bitset<sizeof(uint64_t)*CHAR_BIT> bX(genXV->getValue().uint64Value);
+		bitset<sizeof(uint64_t)*CHAR_BIT> bY(genYV->getValue().uint64Value);
 
-		for (unsigned int j = 0; j < genXV->getGeneBits()->size(); j++) {
+		for (unsigned int j = 0; j < sizeof(uint64_t)*CHAR_BIT; j++) {
 			//Then we iterate through the bits of each gene pair
-			if (!first) {
+			if (i== childXGenes->size()-1 && j == sizeof(uint64_t)*CHAR_BIT -1) {
 				/*
 				The first bit is always kept untouched
 				This is a premise of crossover
-				*/
-				first = true;
+				*/				
 				continue;
 			}
 
@@ -518,19 +445,22 @@ void GeneticAlgorithm::crossOverUniform(Chromosome * parentX, Chromosome * paren
 				/*
 				Set bitX[j] as bitY[j] and vice-versa
 				*/				
-				unsigned char bitX = (*genXV->getGeneBits())[j];
-				(*genXV->getGeneBits())[j] = (*genYV->getGeneBits())[j];
-				(*genYV->getGeneBits())[j] = bitX;
-
+				bool bitX = bX.test(j);
+				bX[j] = bY[j];
+				bY[j] = bitX;
 			}
-
 		}
 
-	
+		//Replace the values with the new mutated ones
+		GeneValue value;
+		value.uint64Value = bX.to_ullong();
+		genXV->setValue(value);
+		value.uint64Value = bY.to_ullong();
+		genYV->setValue(value);	
 	}
 
-	//Assign the childs to replace their parents
-	childXP->setChromosome(childX);
+	//Assign the children to replace their parents
+	childXP->setChromosome(childX);	
 	if(mutation)
 		mutateUniform(childXP);
 	childYP->setChromosome(childY);

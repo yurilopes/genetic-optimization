@@ -7,6 +7,9 @@
 #include <random>
 #include "gene.h"
 
+#define MAXFLOATPRINT 99999.f
+#define MINFLOATPRINT -9999.f
+
 extern mt19937 genGA;
 
 class Chromosome; //Forward declaration of Chromosome class for FitnessFunction typedef
@@ -52,87 +55,7 @@ Chromosome::Chromosome(vector<Gene *> * genModel, FitnessFunction fitFunction){
 	for (unsigned int i = 0; i < genModel->size(); i++) {
 		Gene * gModel = (*genModel)[i];
 		Gene *newGene = new Gene(gModel);		
-		switch (newGene->getDataType())
-		{
-			case (FLOAT): {
-				uniform_real_distribution<float> randomF(newGene->getMinimumSeed().floatValue, newGene->getMaximumSeed().floatValue);
-				newGene->setValueFloat(randomF(genGA));
-				break;
-			}
-			case (DOUBLE): {
-				uniform_real_distribution<double> randomD(newGene->getMinimumSeed().doubleValue, newGene->getMaximumSeed().doubleValue);
-				newGene->setValueDouble(randomD(genGA));
-				break;
-			}
-			case (INT8): {
-				uniform_int_distribution<int16_t> randomI16(newGene->getMinimumSeed().int8Value, newGene->getMaximumSeed().int8Value);
-				#pragma warning(push)
-				#pragma warning(disable : 4244)
-				/*
-				Should never cause loss of data, since seed values are within the 8 bit range
-				*/
-				newGene->setValueUInt8(randomI16(genGA));
-				#pragma warning(pop)
-				break;
-			}
-			case (UINT8): {
-				/*
-				Can't have a uniform_int_distribution<uint8_t> because:
-
-				It seems that this library implementaion behaviour does not violate the ISO C++ standard, because (26.5.1.1) 
-				"effect of instantiating a template ... that has a template type parameter named IntType __is undefined unless__ the 
-				corresponding template argument is cv-unqualified 
-				and __is one of short, int, long, long long, unsigned short, unsigned int, unsigned long, or unsigned long long__", 
-				char is not listed.
-
-				More info at: http://stackoverflow.com/questions/31460733/why-arent-stduniform-int-distributionuint8-t-and-stduniform-int-distri
-				*/
-				uniform_int_distribution<uint16_t> randomI16(newGene->getMinimumSeed().uint8Value, newGene->getMaximumSeed().uint8Value);			
-				#pragma warning(push)
-				#pragma warning(disable : 4244)
-				/*
-				Should never cause loss of data, since seed values are within the 8 bit range
-				*/
-
-				newGene->setValueUInt8(randomI16(genGA));
-				#pragma warning(pop)
-				break;
-			}
-			case (INT16): {
-				uniform_int_distribution<int16_t> randomI16(newGene->getMinimumSeed().int16Value, newGene->getMaximumSeed().int16Value);
-				newGene->setValueInt16(randomI16(genGA));
-				break;
-			}
-			case (UINT16): {
-				uniform_int_distribution<uint16_t> randomI16(newGene->getMinimumSeed().uint16Value, newGene->getMaximumSeed().uint16Value);
-				newGene->setValueUInt16(randomI16(genGA));
-				break;
-			}
-			case (INT32): {
-				uniform_int_distribution<int32_t> randomI32(newGene->getMinimumSeed().int32Value, newGene->getMaximumSeed().int32Value);
-				newGene->setValueInt32(randomI32(genGA));
-				break;
-			}
-			case (UINT32): {
-				uniform_int_distribution<uint32_t> randomI32(newGene->getMinimumSeed().uint32Value, newGene->getMaximumSeed().uint32Value);
-				newGene->setValueUInt32(randomI32(genGA));
-				break;
-			}
-			case (INT64): {
-				uniform_int_distribution<int64_t> randomI64(newGene->getMinimumSeed().int64Value, newGene->getMaximumSeed().int64Value);
-				newGene->setValueInt64(randomI64(genGA));
-				break;
-			}
-			case (UINT64): {
-				uniform_int_distribution<uint64_t> randomI64(newGene->getMinimumSeed().uint64Value, newGene->getMaximumSeed().uint64Value);
-				newGene->setValueUInt64(randomI64(genGA));
-				break;
-			}
-			default: {
-				//TODO: Set value for CUSTOM data type
-				break;
-			}
-		}
+		newGene->initialize();
 		//Add new gene to gene vector
 		genes->push_back(newGene);
 	}
@@ -223,40 +146,43 @@ inline void Chromosome::print()
 		Gene * gen = *it;
 		switch (gen->getDataType()) {
 			case INT8:	
-				printf("%6" PRIi8 , gen->getValueInt8());
+				printf("%6" PRIi8 , gen->getValue().int8Value);
 				break;
 			case UINT8:
-				printf("%6" PRIu8, gen->getValueUInt8());
+				printf("%6" PRIu8, gen->getValue().uint8Value);
 				break;
 			case INT16:
-				printf("%6" PRIi16, gen->getValueInt16());
+				printf("%6" PRIi16, gen->getValue().int16Value);
 				break;
 			case UINT16:
-				printf("%6" PRIu16, gen->getValueUInt16());
+				printf("%6" PRIu16, gen->getValue().uint16Value);
 				break;
 			case INT32:
-				printf("%6" PRIi32, gen->getValueInt32());
+				printf("%6" PRIi32, gen->getValue().int32Value);
 			case UINT32:
-				printf("%6" PRIu32, gen->getValueUInt32());
+				printf("%6" PRIu32, gen->getValue().uint32Value);
 				break;
 			case INT64:
-				printf("%6" PRIi64, gen->getValueInt64());
+				printf("%6" PRIi64, gen->getValue().int64Value);
 			case UINT64:
-				printf("%6" PRIu64, gen->getValueUInt64());
+				printf("%6" PRIu64, gen->getValue().uint64Value);
 				break;
 			case FLOAT:
-				printf("%6.3f", gen->getValueFloat());
+				printf("%6.3e", gen->getValue().floatValue);
 				break;
 			case DOUBLE:			
-				printf("%6.3f", gen->getValueDouble());
+				printf("%6.3e", gen->getValue().doubleValue);
 				break;
 			case CUSTOM:
-				std::cout << uppercase << hex << gen->getValueUInt64() << dec;
+				std::cout << uppercase << hex << gen->getValue().uint64Value << dec;
 				break;			
 		}		
 		std::cout << ", \t";
 	}
-	std::cout << "F=" << fitness << endl;;
+	if(fitness >= MINFLOATPRINT && fitness <= MAXFLOATPRINT)
+		printf("F=%6.3f\n", fitness);
+	else
+		printf("F=%6.3e\n", fitness);
 }
 
 inline bool Chromosome::equals(Chromosome * ind)
@@ -270,18 +196,25 @@ inline bool Chromosome::equals(Chromosome * ind)
 		It doesn't matter the data type, be it float, int8, int64 ou double
 		This comparison should work given the way the data is stored in memory
 		*/	
-		if (
-			((*genes)[i]->getDataType() != (*ind->getGenes())[i]->getDataType()) ||
-			((*genes)[i]->getValueUInt64() != (*ind->getGenes())[i]->getValueUInt64())
-			)
+		if ((*genes)[i]->getDataType() != (*ind->getGenes())[i]->getDataType())
 			return false;
+
+		//Either double or uint64_t will be the biggest data field
+		if (sizeof(double) > sizeof(uint64_t)) {
+			if ((*genes)[i]->getValue().doubleValue != (*ind->getGenes())[i]->getValue().doubleValue)
+				return false;
+		}
+		else {
+			if ((*genes)[i]->getValue().uint64Value != (*ind->getGenes())[i]->getValue().uint64Value)
+				return false;
+		}						
 	}
 	return true;
 
 }
 
 double Chromosome::calculateFitness(){
-	fitness = fitnessFunction(this);
+	fitness = fitnessFunction(this);	
 	accFitness = fitness;
     return fitness;
 }

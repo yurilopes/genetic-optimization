@@ -98,11 +98,11 @@ void Population::printPopulation(){
 
 void Population::calculateFitness(){	
 	/*
-	Calculate fitness values for each individual
+	Calculate fitness values for each chromosome
 	*/
     for(vector<Chromosome*>::iterator itr = chromosomes.begin(); itr!=chromosomes.end(); itr++){
-        Chromosome *individual = *itr;
-        individual->calculateFitness();
+        Chromosome *chm = *itr;
+        chm->calculateFitness();
     }
 
     sort(chromosomes.begin(), chromosomes.end(), Chromosome::compare);

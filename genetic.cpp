@@ -11,17 +11,27 @@ using namespace std;
 double fitnessFunction(Chromosome * chromosome){	
 	//http://www.zweigmedia.com/RealWorld/simplex.html
 
-	uint8_t x = (*chromosome->getGenes())[0]->getValueUInt8();
-	uint8_t y = (*chromosome->getGenes())[1]->getValueUInt8();
-	uint8_t z = (*chromosome->getGenes())[2]->getValueUInt8();
-	uint8_t w = (*chromosome->getGenes())[3]->getValueUInt8();
+	float x = (*chromosome->getGenes())[0]->getValue().floatValue;
+	float y = (*chromosome->getGenes())[1]->getValue().floatValue;
+	float z = (*chromosome->getGenes())[2]->getValue().floatValue;
+	float w = (*chromosome->getGenes())[3]->getValue().floatValue;
+	
+	//We have to check if the float/double values are valid
+	if (isnan(x) || isinf(x))
+		return -9999;
+	if (isnan(y) || isinf(y))
+		return -9999;
+	if (isnan(z) || isinf(z))
+		return -9999;
+	if (isnan(w) || isinf(w))
+		return -9999;
 	
 
 	double fitness = (x / 2) + 3 * y + z + 4 * w;
 	//Optimal Solution: p = 115; x = 10, y = 10, z = 0, w = 20
 
 	bool violated = false;
-	int32_t violations[11] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+	float violations[11] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 	/*
 	To evaluate the constraints we check if their complement is true
@@ -67,9 +77,10 @@ double fitnessFunction(Chromosome * chromosome){
 	return fitness;	
 }
 
-#define IDEAL_FITNESS 115
+#define TOLERANCE 1.0f
+#define IDEAL_FITNESS 115.0f
 #define MAX_SEED 20
-#define POPULATION_SIZE 200
+#define POPULATION_SIZE 5000
 
 int main(){
 
@@ -82,20 +93,20 @@ int main(){
 	*/
 	vector<Gene *> genes;
 
-	Gene *gene = new Gene(UINT8);
-	gene->setSeedRange(uint8_t(0), uint8_t(MAX_SEED));
+	Gene *gene = new Gene(FLOAT);
+	gene->setSeedRange(float(0), float(MAX_SEED));
 	genes.push_back(gene);
 	
-	gene = new Gene(UINT8);
-	gene->setSeedRange(uint8_t(0), uint8_t(MAX_SEED));
+	gene = new Gene(FLOAT);
+	gene->setSeedRange(float(0), float(MAX_SEED));
 	genes.push_back(gene);
 
-	gene = new Gene(UINT8);
-	gene->setSeedRange(uint8_t(0), uint8_t(MAX_SEED));
+	gene = new Gene(FLOAT);
+	gene->setSeedRange(float(0), float(MAX_SEED));
 	genes.push_back(gene);
 
-	gene = new Gene(UINT8);
-	gene->setSeedRange(uint8_t(0), uint8_t(MAX_SEED));
+	gene = new Gene(FLOAT);
+	gene->setSeedRange(float(0), float(MAX_SEED));
 	genes.push_back(gene);
 
 	/*
@@ -105,44 +116,33 @@ int main(){
 	GeneticAlgorithm ga(&genes);	
 
 	ga.setElitism(true);	
-	ga.setEliteSize(5);
+	ga.setEliteSize(25);
 	
 	ga.setMutation(true);
 	ga.setMutationRate(0.1f);
 	
 	ga.setFitnessFunction(fitnessFunction);
 
-	ga.initializePopulation(POPULATION_SIZE);	
+	ga.initializePopulation(POPULATION_SIZE);
 
 	clock_t timeBegin = clock(); //Starting time
 
 	int i;
 	for (i = 0; i < 0x6FFFFFFF; i++) {				
 
-		if (i % 50 == 0) {
+		if (i % 50 == 0 && i!=0) {
 			cout << "Iteration " << i << endl;
 			cout << "Fittest individual:" << endl;
 			ga.printFittestChromosome();					
 		}
 
-		ga.calculateFitness();
+		ga.calculateFitness();				
 
-		if (ga.getFittestChromosome()->getFitness() == IDEAL_FITNESS)
+		if (abs(ga.getFittestChromosome()->getFitness() - IDEAL_FITNESS) <= TOLERANCE)
 			break;
 
 		ga.selectionRoulette();	
-
-		//cout << "Iteration " << i << endl;
-		//ga.printPopulation();		
-
-		//cout << "-------------------------------------" << endl;
-
 		ga.generateRouletteMatingPool();
-		//ga.printMatingPool();
-
-		//cout << endl << endl;
-
-		//system("pause");
 		ga.crossOver();
 	}
 

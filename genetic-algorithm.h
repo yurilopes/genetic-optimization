@@ -8,7 +8,7 @@
 #include <limits>
 
 #if CHAR_BIT != 8
-#pragma message("CHAR_BIT is not 8 bits long. This could lead to erratic behaviour and loss of information.")
+	#pragma message("CHAR_BIT is not 8 bits long. This could lead to erratic behaviour and loss of information.")
 #endif // CHAR_BIT != 8
 
 #include "population.h"

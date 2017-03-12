@@ -1,11 +1,10 @@
 //Comment this line below if not running in Visual Studio
 #include "stdafx.h"
 
-#include <limits.h>
+#include <vld.h> 
 
 using namespace std; 
 
-//#include "genetic-algorithm.h"
 #include "genetic-algorithm.h"
 
 double fitnessFunction(Chromosome * chromosome){	
@@ -77,10 +76,10 @@ double fitnessFunction(Chromosome * chromosome){
 	return fitness;	
 }
 
-#define TOLERANCE 1.0f
+#define TOLERANCE 0.1f
 #define IDEAL_FITNESS 115.0f
 #define MAX_SEED 20
-#define POPULATION_SIZE 5000
+#define POPULATION_SIZE 1000
 
 int main(){
 

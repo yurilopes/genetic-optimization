@@ -13,23 +13,20 @@
 
 class Population{
     protected:
-        vector<Chromosome*>					chromosomes;
-        mt19937								*gen;
-        uniform_int_distribution<int32_t>	*dis;
-        int32_t								random();		
+        vector<Chromosome*>					chromosomes;                        
 		vector<Gene *>						*geneModel;
+		void								deleteChromosomes();
 		
-
     public:
         Population(vector<Gene *> *genModel);
         ~Population();
-        void printPopulation();
-        void calculateFitness();		
-        void initialize(uint32_t populationSize, FitnessFunction fitFunction);
-		vector<Chromosome*>* getChromosomes();
-		Chromosome * getEqualChromosome(Chromosome * ind);
-		Chromosome * getFittestChromosome();
-		void refreshFitnessFunction(FitnessFunction func);
+        void								printPopulation();
+        void								calculateFitness();		
+        void								initialize(uint32_t populationSize, FitnessFunction fitFunction);
+		vector<Chromosome*>					*getChromosomes();
+		Chromosome							*getEqualChromosome(Chromosome * ind);
+		Chromosome							*getFittestChromosome();
+		void								refreshFitnessFunction(FitnessFunction func);
 
 };
 
@@ -61,20 +58,22 @@ inline void Population::refreshFitnessFunction(FitnessFunction func)
 }
 
 Population::~Population(){
-	for(vector<Chromosome*>::iterator itr = chromosomes.begin(); itr!=chromosomes.end(); itr++){
-		Chromosome *individual = *itr;
-		delete individual;
-	}
+	deleteChromosomes();
 }
 
-int32_t Population::random(){
-    return (*dis)((*gen));
+inline void Population::deleteChromosomes()
+{
+	for (vector<Chromosome *>::iterator it = chromosomes.begin(); it != chromosomes.end(); it++) {
+		Chromosome * chm = *it;
+		delete chm;
+	}	
 }
 
 void Population::initialize(uint32_t populationSize, FitnessFunction fitFunction){
+	deleteChromosomes();
     for(uint32_t i=0; i<populationSize; i++){
-        Chromosome *individual = new Chromosome(geneModel, fitFunction);
-        chromosomes.push_back(individual);
+        Chromosome *chm = new Chromosome(geneModel, fitFunction);
+        chromosomes.push_back(chm);
     }
 }
 

@@ -18,38 +18,53 @@ typedef double(*FitnessFunction)(Chromosome * chromosome);
 
 class Chromosome{
     protected:
-        vector<Gene *>		*genes;
-        double				fitness;
-		double				accFitness;
-		double				accNormalizedFitness;
-        FitnessFunction		fitnessFunction;
-		vector<Gene *>		*geneModel;
+        vector<Gene *>						*genes = NULL;
+        double								fitness;
+		double								accFitness;
+		double								accNormalizedFitness;
+        FitnessFunction						fitnessFunction;
+		vector<Gene *>						*geneModel;
+
+		void								deleteGenes();
 		
 
     public:
         Chromosome(vector<Gene *> * geneModel, FitnessFunction fitFunction);
 		Chromosome(Chromosome * original);
         ~Chromosome();
-        vector<Gene *> *getGenes();
-		vector<Gene *> *getGeneModel();
-		void setChromosome(Chromosome * chm);
-		double calculateFitness();
-		double addToAccFitness(double value);
-        double getFitness();
-		double getAccFitness();
-		void setFitnessFunction(FitnessFunction fitFunc);
-		FitnessFunction getFitnessFunction();
-		double getAccNormalizedFitness();
-		void setAccNormalizedFitness(double fit);
-		void print();
-		bool equals(Chromosome * ind);
+        vector<Gene *>						*getGenes();
+		vector<Gene *>						*getGeneModel();
+		void								setChromosome(Chromosome * chm);
+		double								calculateFitness();
+		double								addToAccFitness(double value);
+        double								getFitness();
+		double								getAccFitness();
+		void								setFitnessFunction(FitnessFunction fitFunc);
+		FitnessFunction						getFitnessFunction();
+		double								getAccNormalizedFitness();
+		void								setAccNormalizedFitness(double fit);
+		void								print();
+		bool								equals(Chromosome * ind);
 
-        static bool compare(Chromosome *ind0, Chromosome *ind1);
+        static bool							compare(Chromosome *ind0, Chromosome *ind1);
 };
 
 
-Chromosome::Chromosome(vector<Gene *> * genModel, FitnessFunction fitFunction){		
+inline void Chromosome::deleteGenes()
+{
+	if (!genes)
+		return;
+	for (vector<Gene *>::iterator it = genes->begin(); it != genes->end(); it++) {
+		Gene * gene = *it;
+		delete gene;
+	}
+	delete genes;
+}
+
+Chromosome::Chromosome(vector<Gene *> * genModel, FitnessFunction fitFunction){
 	geneModel = genModel;	
+	deleteGenes();
+
 	genes = new vector<Gene *>();
 	
 	for (unsigned int i = 0; i < genModel->size(); i++) {
@@ -81,6 +96,9 @@ inline Chromosome::Chromosome(Chromosome * original)
 		in memory.
 	We want to create copies of the Gene objects' instances.
 	*/
+
+	deleteGenes();
+
 	genes = new vector<Gene *>();
 	for (vector<Gene *>::iterator it = original->getGenes()->begin(); it != original->getGenes()->end(); it++) {
 		Gene *gen = *it;
@@ -90,8 +108,7 @@ inline Chromosome::Chromosome(Chromosome * original)
 }
 
 Chromosome::~Chromosome(){
-    if(genes)
-		delete genes;
+	deleteGenes();
 }
 
 vector<Gene *> * Chromosome::getGenes(){
@@ -105,9 +122,8 @@ inline vector<Gene*> * Chromosome::getGeneModel()
 
 inline void Chromosome::setChromosome(Chromosome *chm)
 {
-	vector<Gene *> * ind = chm->getGenes();
-	if (genes != NULL)
-		delete genes;
+	deleteGenes();
+	vector<Gene *> * ind = chm->getGenes();	
 	genes = ind;
 	geneModel = chm->getGeneModel();
 }
@@ -168,10 +184,16 @@ inline void Chromosome::print()
 				printf("%6" PRIu64, gen->getValue().uint64Value);
 				break;
 			case FLOAT:
-				printf("%6.3e", gen->getValue().floatValue);
+				if (gen->getValue().floatValue >= MINFLOATPRINT && gen->getValue().floatValue <= MAXFLOATPRINT)
+					printf("%6.3f", gen->getValue().floatValue);
+				else
+					printf("%6.3e", gen->getValue().floatValue);
 				break;
-			case DOUBLE:			
-				printf("%6.3e", gen->getValue().doubleValue);
+			case DOUBLE:		
+				if (gen->getValue().doubleValue >= MINFLOATPRINT && gen->getValue().doubleValue <= MAXFLOATPRINT)
+					printf("%6.3f", gen->getValue().doubleValue);
+				else
+					printf("%6.3e", gen->getValue().doubleValue);				
 				break;
 			case CUSTOM:
 				std::cout << uppercase << hex << gen->getValue().uint64Value << dec;

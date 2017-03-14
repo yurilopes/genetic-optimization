@@ -202,9 +202,9 @@ inline void Chromosome::print()
 		std::cout << ", \t";
 	}
 	if(fitness >= MINFLOATPRINT && fitness <= MAXFLOATPRINT)
-		printf("F=%6.3f\n", fitness);
+		printf("F=%7.5f\n", fitness);
 	else
-		printf("F=%6.3e\n", fitness);
+		printf("F=%7.5e\n", fitness);
 }
 
 inline bool Chromosome::equals(Chromosome * ind)

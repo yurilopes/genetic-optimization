@@ -76,10 +76,10 @@ double fitnessFunction(Chromosome * chromosome){
 	return fitness;	
 }
 
-#define TOLERANCE 0.1f
+#define TOLERANCE 1e-3f
 #define IDEAL_FITNESS 115.0f
 #define MAX_SEED 20
-#define POPULATION_SIZE 1000
+#define POPULATION_SIZE 2000
 
 int main(){
 
@@ -126,10 +126,10 @@ int main(){
 
 	clock_t timeBegin = clock(); //Starting time
 
-	int i;
+	uint64_t i;
 	for (i = 0; i < 0x6FFFFFFF; i++) {				
 
-		if (i % 50 == 0 && i!=0) {
+		if (i % 10 == 0 && i!=0) {
 			cout << "Iteration " << i << endl;
 			cout << "Fittest individual:" << endl;
 			ga.printFittestChromosome();					

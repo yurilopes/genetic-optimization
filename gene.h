@@ -83,17 +83,9 @@ inline Gene::Gene(Gene *original)
 	dataType = original->getDataType();	
 
 	//Either double or uint64_t will be the biggest data field
-	
-	if (sizeof(double) > sizeof(uint64_t)) {
-		minSeed.doubleValue = original->getMinimumSeed().doubleValue;
-		maxSeed.doubleValue = original->getMaximumSeed().doubleValue;
-		value.doubleValue = original->getValue().doubleValue;
-	}
-	else {
-		minSeed.uint64Value = original->getMinimumSeed().uint64Value;
-		maxSeed.uint64Value = original->getMaximumSeed().uint64Value;
-		value.uint64Value = original->getValue().uint64Value;
-	}
+	minSeed = original->getMinimumSeed();
+	maxSeed = original->getMaximumSeed();
+	value = original->getValue();
 }
 
 inline GeneValue Gene::getValue()
@@ -103,13 +95,7 @@ inline GeneValue Gene::getValue()
 
 inline void Gene::setValue(GeneValue val)
 {
-	//Either double or uint64_t will be the biggest data field
-	if (sizeof(double) > sizeof(uint64_t)) {
-		value.doubleValue = val.doubleValue;
-	}
-	else {		
-		value.uint64Value = val.uint64Value;
-	}
+	value = val;
 }
 
 inline GeneDataType Gene::getDataType()

@@ -177,18 +177,14 @@ inline void Gene::initialize()
 {
 	switch (dataType)
 	{
-		case (FLOAT): { 
-			uniform_real_distribution<float> randomF(minSeed.floatValue, maxSeed.floatValue);
-			GeneValue val;
-			val.floatValue = randomF(genGA);
-			value = val;
+		case (FLOAT): { 			
+			uniform_real_distribution<float> randomF(minSeed.floatValue, maxSeed.floatValue);			
+			value.floatValue = randomF(genGA);
 			break;
 		}
 		case (DOUBLE): {
-			uniform_real_distribution<double> randomD(minSeed.doubleValue, maxSeed.doubleValue);
-			GeneValue val;
-			val.doubleValue = randomD(genGA);
-			value = val;
+			uniform_real_distribution<double> randomD(minSeed.doubleValue, maxSeed.doubleValue);			
+			value.doubleValue = randomD(genGA);			
 			break;
 		}
 		case (INT8): {

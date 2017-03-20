@@ -14,7 +14,7 @@
 class Population{
     protected:
         vector<Chromosome*>					chromosomes;                        
-		vector<Gene *>						*geneModel;
+		vector<Gene *>						*genotype;
 		void								deleteChromosomes();
 		
     public:
@@ -27,6 +27,7 @@ class Population{
 		Chromosome							*getEqualChromosome(Chromosome * ind);
 		Chromosome							*getFittestChromosome();
 		void								refreshFitnessFunction(FitnessFunction func);
+		vector<Gene *>						*getGenotype();
 
 };
 
@@ -57,6 +58,11 @@ inline void Population::refreshFitnessFunction(FitnessFunction func)
 	}
 }
 
+inline vector<Gene*>* Population::getGenotype()
+{
+	return genotype;
+}
+
 Population::~Population(){
 	deleteChromosomes();
 }
@@ -72,13 +78,13 @@ inline void Population::deleteChromosomes()
 void Population::initialize(uint32_t populationSize, FitnessFunction fitFunction){
 	deleteChromosomes();
     for(uint32_t i=0; i<populationSize; i++){
-        Chromosome *chm = new Chromosome(geneModel, fitFunction);
+        Chromosome *chm = new Chromosome(genotype, fitFunction);
         chromosomes.push_back(chm);
     }
 }
 
 Population::Population(vector<Gene *> *genModel){
-	geneModel = genModel;
+	genotype = genModel;
 }
 
 

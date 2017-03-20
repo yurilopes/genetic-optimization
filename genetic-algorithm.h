@@ -42,6 +42,7 @@ public:
 	size_t				getPopulationSize();
 	void				printMatingPool();
 	Chromosome			*getFittestChromosome();
+	vector<Gene *>		*getGenotype();
 
 
 	void				selectionRoulette();
@@ -50,11 +51,11 @@ public:
 
 	static int32_t getVariable(vector<int32_t> *variables, uint32_t position);
 
-	GeneticAlgorithm(vector<Gene *>	*genModel);
+	GeneticAlgorithm(vector<Gene *>	*gentyp);
 	~GeneticAlgorithm();
 
 protected:
-	vector<Gene *>		*geneModel;
+	vector<Gene *>		*genotype;
 	Population			*gPopulation = NULL, *gMatingPool = NULL;
 	uint32_t			populationSize = 0;
 	FitnessFunction		fitnessFunc = NULL;
@@ -120,7 +121,7 @@ inline void GeneticAlgorithm::generateRouletteMatingPool()
 	if (gMatingPool != NULL)
 		delete gMatingPool;
 
-	gMatingPool = new Population(geneModel);
+	gMatingPool = new Population(genotype);
 	gMatingPool->refreshFitnessFunction(fitnessFunc);
 
 	size_t popSize = gPopulation->getChromosomes()->size();
@@ -214,9 +215,9 @@ inline void GeneticAlgorithm::crossOver()
 
 }
 
-inline GeneticAlgorithm::GeneticAlgorithm(vector<Gene*>* genModel)
+inline GeneticAlgorithm::GeneticAlgorithm(vector<Gene*>* gentyp)
 {
-	geneModel = genModel;
+	genotype = gentyp;
 }
 
 inline GeneticAlgorithm::~GeneticAlgorithm()
@@ -250,7 +251,7 @@ inline void GeneticAlgorithm::initializePopulation(uint32_t populationSize)
 	if (gPopulation != NULL)
 		delete gPopulation;
 
-	gPopulation = new Population(geneModel);
+	gPopulation = new Population(genotype);
 	gPopulation->initialize(populationSize, fitnessFunc);
 }
 
@@ -332,6 +333,11 @@ inline Chromosome * GeneticAlgorithm::getFittestChromosome()
 	if (gPopulation == NULL)
 		return NULL;
 	return gPopulation->getFittestChromosome();
+}
+
+inline vector<Gene*>* GeneticAlgorithm::getGenotype()
+{
+	return genotype;
 }
 
 inline Chromosome * GeneticAlgorithm::getFirstChromosomeMatingRoulette(Population * pop, float probability)
@@ -424,7 +430,7 @@ void GeneticAlgorithm::crossOverUniform(Chromosome * parentX, Chromosome * paren
 		Gene *genYV = (*parentY->getGenes())[i];
 		//TODO
 		bitset<sizeof(uint64_t)*CHAR_BIT> bX(genXV->getValue().uint64Value);
-		bitset<sizeof(uint64_t)*CHAR_BIT> bY(genYV->getValue().uint64Value);
+		bitset<sizeof(uint64_t)*CHAR_BIT> bY(genYV->getValue().uint64Value);		
 
 		for (size_t j = 0; j < sizeof(uint64_t)*CHAR_BIT; j++) {
 			//Then we iterate through the bits of each gene pair

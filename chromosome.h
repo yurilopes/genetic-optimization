@@ -1,7 +1,6 @@
 #pragma once
 
 #include <vector>
-#include <conio.h>
 #include <inttypes.h>
 #include <ctime>
 #include <random>
@@ -23,7 +22,7 @@ class Chromosome{
 		double								accFitness;
 		double								accNormalizedFitness;
         FitnessFunction						fitnessFunction;
-		vector<Gene *>						*geneModel;
+		vector<Gene *>						*genotype;
 
 		void								deleteGenes();
 		
@@ -33,7 +32,7 @@ class Chromosome{
 		Chromosome(Chromosome * original);
         ~Chromosome();
         vector<Gene *>						*getGenes();
-		vector<Gene *>						*getGeneModel();
+		vector<Gene *>						*getGenotype();
 		void								setChromosome(Chromosome * chm);
 		double								calculateFitness();
 		double								addToAccFitness(double value);
@@ -62,7 +61,7 @@ inline void Chromosome::deleteGenes()
 }
 
 Chromosome::Chromosome(vector<Gene *> * genModel, FitnessFunction fitFunction){
-	geneModel = genModel;	
+	genotype = genModel;	
 	deleteGenes();
 
 	genes = new vector<Gene *>();
@@ -115,9 +114,9 @@ vector<Gene *> * Chromosome::getGenes(){
     return genes;	
 }
 
-inline vector<Gene*> * Chromosome::getGeneModel()
+inline vector<Gene*> * Chromosome::getGenotype()
 {
-	return geneModel;
+	return genotype;
 }
 
 inline void Chromosome::setChromosome(Chromosome *chm)
@@ -125,7 +124,7 @@ inline void Chromosome::setChromosome(Chromosome *chm)
 	deleteGenes();
 	vector<Gene *> * ind = chm->getGenes();	
 	genes = ind;
-	geneModel = chm->getGeneModel();
+	genotype = chm->getGenotype();
 }
 
 double Chromosome::getFitness(){
@@ -185,15 +184,15 @@ inline void Chromosome::print()
 				break;
 			case FLOAT:
 				if (gen->getValue().floatValue >= MINFLOATPRINT && gen->getValue().floatValue <= MAXFLOATPRINT)
-					printf("%6.3f", gen->getValue().floatValue);
+					printf("%7.5f", gen->getValue().floatValue);
 				else
-					printf("%6.3e", gen->getValue().floatValue);
+					printf("%7.5e", gen->getValue().floatValue);
 				break;
 			case DOUBLE:		
 				if (gen->getValue().doubleValue >= MINFLOATPRINT && gen->getValue().doubleValue <= MAXFLOATPRINT)
-					printf("%6.3f", gen->getValue().doubleValue);
+					printf("%7.5f", gen->getValue().doubleValue);
 				else
-					printf("%6.3e", gen->getValue().doubleValue);				
+					printf("%7.5e", gen->getValue().doubleValue);				
 				break;
 			case CUSTOM:
 				std::cout << uppercase << hex << gen->getValue().uint64Value << dec;

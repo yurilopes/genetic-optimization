@@ -1,11 +1,33 @@
 //Comment this line below if not running in Visual Studio
 #include "stdafx.h"
 
-#include <vld.h> 
-
 using namespace std; 
 
 #include "genetic-algorithm.h"
+
+double fitnessFunction2(Chromosome * chromosome) {
+	//http://tutorial.math.lamar.edu/Classes/Alg/NonlinearSystems.aspx
+
+	float x = (*chromosome->getGenes())[0]->getValue().floatValue;
+	float y = (*chromosome->getGenes())[1]->getValue().floatValue;
+
+	//We have to check if the float/double values are valid
+	if (isnan(x) || isinf(x))
+		return -9999;
+	if (isnan(y) || isinf(y))
+		return -9999;
+
+
+	double fitness = 10;
+	
+	if (2*x*x + y*y != 24)
+		fitness -= abs(24 - (2 * x*x + y*y));
+	
+	if (x*x - y*y != -12)
+		fitness -= abs(-12 - (x*x - y*y));
+
+	return fitness;
+}
 
 double fitnessFunction(Chromosome * chromosome){	
 	//http://www.zweigmedia.com/RealWorld/simplex.html
@@ -49,7 +71,7 @@ double fitnessFunction(Chromosome * chromosome){
 		violated = true;
 		violations[2] = 10 - (w - y);
 	}
-
+	
 	if (x < 0) {
 		violated = true;
 		violations[3] = -x;
@@ -76,10 +98,12 @@ double fitnessFunction(Chromosome * chromosome){
 	return fitness;	
 }
 
-#define TOLERANCE 1e-3f
-#define IDEAL_FITNESS 115.0f
-#define MAX_SEED 20
-#define POPULATION_SIZE 2000
+#define TOLERANCE			1e-4f
+#define IDEAL_FITNESS		115.0f
+#define MIN_SEED			-6.0f
+#define MAX_SEED			6.0f
+#define POPULATION_SIZE		8000
+#define ITERATION_SHOW		1
 
 int main(){
 
@@ -93,21 +117,21 @@ int main(){
 	vector<Gene *> genes;
 
 	Gene *gene = new Gene(FLOAT);
-	gene->setSeedRange(float(0), float(MAX_SEED));
+	gene->setSeedRange(float(MIN_SEED), float(MAX_SEED));
 	genes.push_back(gene);
 	
 	gene = new Gene(FLOAT);
+	gene->setSeedRange(float(MIN_SEED), float(MAX_SEED));
+	genes.push_back(gene);
+
+/*	gene = new Gene(FLOAT);
 	gene->setSeedRange(float(0), float(MAX_SEED));
 	genes.push_back(gene);
 
 	gene = new Gene(FLOAT);
 	gene->setSeedRange(float(0), float(MAX_SEED));
 	genes.push_back(gene);
-
-	gene = new Gene(FLOAT);
-	gene->setSeedRange(float(0), float(MAX_SEED));
-	genes.push_back(gene);
-
+	*/
 	/*
 	Then we begin our GA setup
 	*/
@@ -120,23 +144,23 @@ int main(){
 	ga.setMutation(true);
 	ga.setMutationRate(0.1f);
 	
-	ga.setFitnessFunction(fitnessFunction);
+	ga.setFitnessFunction(fitnessFunction2);
 
 	ga.initializePopulation(POPULATION_SIZE);
 
 	clock_t timeBegin = clock(); //Starting time
 
 	uint64_t i;
-	for (i = 0; i < 0x6FFFFFFF; i++) {				
+	for (i = 0; i < 0xFFFFFFFF; i++) {						
 
-		if (i % 10 == 0 && i!=0) {
+		ga.calculateFitness();		
+
+		if (i % ITERATION_SHOW == 0) {
 			cout << "Iteration " << i << endl;
 			cout << "Fittest individual:" << endl;
-			ga.printFittestChromosome();					
+			ga.printFittestChromosome();
 		}
-
-		ga.calculateFitness();				
-
+		//system("pause");
 		if (abs(ga.getFittestChromosome()->getFitness() - IDEAL_FITNESS) <= TOLERANCE)
 			break;
 

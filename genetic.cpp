@@ -4,7 +4,10 @@
 using namespace std; 
 
 #include "genetic-algorithm.h"
+#include "mutation-uniform.h"
+#include "crossover-uniform-bitwise.h"
 
+/*
 double fitnessFunction2(Chromosome * chromosome) {
 	//http://tutorial.math.lamar.edu/Classes/Alg/NonlinearSystems.aspx
 
@@ -27,6 +30,11 @@ double fitnessFunction2(Chromosome * chromosome) {
 		fitness -= abs(-12 - (x*x - y*y));
 
 	return fitness;
+}
+*/
+
+double fitnessFunction2(Chromosome * chromosome) {
+	return (*chromosome->getGenes())[0]->getValue().uint8Value;
 }
 
 double fitnessFunction(Chromosome * chromosome){	
@@ -55,8 +63,8 @@ double fitnessFunction(Chromosome * chromosome){
 	float violations[11] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 	/*
-	To evaluate the constraints we check if their complement is true
-	If so, the constraint has been violated and we should punish the fitness
+	For constraint evaluation, we check if their complement is true.
+	If so, the constraint has been violated and we should punish the fitness proportionately.
 	*/
 
 	if (x + y + z + w > 40) {		
@@ -100,51 +108,71 @@ double fitnessFunction(Chromosome * chromosome){
 
 #define TOLERANCE			1e-4f
 #define IDEAL_FITNESS		115.0f
-#define MIN_SEED			-6.0f
-#define MAX_SEED			6.0f
-#define POPULATION_SIZE		8000
-#define ITERATION_SHOW		1
+#define MIN_SEED			0.0f
+#define MAX_SEED			40.0f
+#define POPULATION_SIZE		2000
+#define ITERATION_SHOW		10
 
 int main(){
 
+	MutationUniform m;
+
 	/*
-	First we create our chromosome model's genes
+	First we create our genotype
 
 	We are declaring below that our chromosomes will look like this:
 
 	CHROMOSOME = [UINT8 variable] [UINT8 variable] [UINT8 variable] [UINT8 variable]
 	*/
-	vector<Gene *> genes;
+	vector<Gene *> genotype;
 
-	Gene *gene = new Gene(FLOAT);
-	gene->setSeedRange(float(MIN_SEED), float(MAX_SEED));
-	genes.push_back(gene);
-	
-	gene = new Gene(FLOAT);
-	gene->setSeedRange(float(MIN_SEED), float(MAX_SEED));
-	genes.push_back(gene);
-
-/*	gene = new Gene(FLOAT);
-	gene->setSeedRange(float(0), float(MAX_SEED));
-	genes.push_back(gene);
-
-	gene = new Gene(FLOAT);
-	gene->setSeedRange(float(0), float(MAX_SEED));
-	genes.push_back(gene);
+	/*
+	Gene *gene = new Gene(UINT8);
+	gene->setSeedRange(0, 40);
+	genotype.push_back(gene);
 	*/
+
+	GeneValue minSeed, maxSeed;
+	minSeed.floatValue = MIN_SEED;
+	maxSeed.floatValue = MAX_SEED;
+	
+	Gene *gene = new Gene(FLOAT);
+	gene->setSeedRange(minSeed, maxSeed);
+	genotype.push_back(gene);
+
+	gene = new Gene(FLOAT);
+	gene->setSeedRange(minSeed, maxSeed);
+	genotype.push_back(gene);
+
+	gene = new Gene(FLOAT);
+	gene->setSeedRange(minSeed, maxSeed);
+	genotype.push_back(gene);
+
+	gene = new Gene(FLOAT);
+	gene->setSeedRange(minSeed, maxSeed);
+	genotype.push_back(gene);
+	
+	
 	/*
 	Then we begin our GA setup
 	*/
 		
-	GeneticAlgorithm ga(&genes);	
+	GeneticAlgorithm ga(&genotype);	
 
 	ga.setElitism(true);	
 	ga.setEliteSize(25);
+
 	
-	ga.setMutation(true);
-	ga.setMutationRate(0.1f);
+	CrossoverUniformBitwise cross;
+	ga.setCrossoverOperator(&cross);
+	ga.setCrossoverProbability(1.0f);
 	
-	ga.setFitnessFunction(fitnessFunction2);
+	MutationUniform mut;
+	ga.setMutationOperator(&mut);
+	ga.enableMutation(true);
+	ga.setMutationProbability(0.1f);	
+	
+	ga.setFitnessFunction(fitnessFunction);
 
 	ga.initializePopulation(POPULATION_SIZE);
 
@@ -157,7 +185,7 @@ int main(){
 
 		if (i % ITERATION_SHOW == 0) {
 			cout << "Iteration " << i << endl;
-			cout << "Fittest individual:" << endl;
+			cout << "Fittest chromosome:" << endl;
 			ga.printFittestChromosome();
 		}
 		//system("pause");
@@ -175,7 +203,7 @@ int main(){
 	cout << "-------------------------------" << endl << endl;
 	cout << endl << "Finished at iteration " << i << endl;
 	cout << "Elapsed time: " << timeSpent << endl;
-	cout << endl << "Final fittest individual: " << endl;
+	cout << endl << "Final fittest chromosome: " << endl;
 	ga.calculateFitness();
 	ga.printFittestChromosome();
 	cout << endl;

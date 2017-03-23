@@ -12,14 +12,14 @@
 #endif // CHAR_BIT != 8
 
 #include "population.h"
+#include "mutation.h"
+#include "crossover.h"
 
 mt19937 genGA(static_cast<unsigned int>(std::time(0)));
-uniform_real_distribution<float> disR0_1(0.0, 1.0);
-uniform_real_distribution<float> disR0_100(0.0, 100.0);
+uniform_real_distribution<double> disR0_1(0.0, 1.0);
 uniform_int_distribution<int32_t> disI0_1(0, 1);
 
 #define randomReal() disR0_1(genGA)
-#define randomReal100() disR0_100(genGA)
 #define randomBinary() disI0_1(genGA)
 
 class GeneticAlgorithm {
@@ -33,16 +33,22 @@ public:
 	void				refreshFitnessFunction();
 	void				setElitism(bool elit);
 	bool				getElitism();
-	bool				getMutation();
-	void				setMutation(bool mut);
-	float				getMutationRate();
-	void				setMutationRate(float rate);
+	bool				isMutationEnabled();
+	void				enableMutation(bool mut);
+	double				getMutationProbability();
+	void				setMutationProbability(double prob);
+	double				getCrossoverProbability();
+	void				setCrossoverProbability(double prob);
 	void				setEliteSize(uint32_t amount);
 	uint32_t			getEliteSize();
 	size_t				getPopulationSize();
 	void				printMatingPool();
 	Chromosome			*getFittestChromosome();
 	vector<Gene *>		*getGenotype();
+	void				setMutationOperator(Mutation *mut);
+	Mutation			*getMutationOperator();
+	void				setCrossoverOperator(Crossover *cross);
+	Crossover			*getCrossoverOperator();
 
 
 	void				selectionRoulette();
@@ -59,15 +65,17 @@ protected:
 	Population			*gPopulation = NULL, *gMatingPool = NULL;
 	uint32_t			populationSize = 0;
 	FitnessFunction		fitnessFunc = NULL;
+	Crossover			*crossoverOperator = NULL;
+	Mutation			*mutationOperator = NULL;
 	bool				elitism = true;
 	uint32_t			eliteSize = 1;
-	bool				mutation = true;
-	float				mutationRate = 0.01f;
+	bool				mutationEnabled = false;
+	double				mutationProbability = 0.01f;
+	double				crossoverProbability = 1.0f;
 
-	void crossOverUniform(Chromosome * parentX, Chromosome * parentY, Chromosome * childXP, Chromosome * childYP);
-	static Chromosome * getFirstChromosomeMatingRoulette(Population * pop, float probability);
-	static Chromosome * getSecondChromosomeMatingRoulette(Population * pop, Chromosome * ind0, float probability);
-	void mutateUniform(Chromosome * Chromosome);
+	static Chromosome * getFirstChromosomeMatingRoulette(Population * pop, double probability);
+	static Chromosome * getSecondChromosomeMatingRoulette(Population * pop, Chromosome * ind0, double probability);
+	void				mutateChromosome(Chromosome * Chromosome);
 };
 
 inline void GeneticAlgorithm::selectionRoulette() {
@@ -209,8 +217,16 @@ inline void GeneticAlgorithm::crossOver()
 			childYP = (*gPopulation->getChromosomes())[i + 1];
 		}
 
-		//Crossover each int32 in each Chromosome
-		crossOverUniform(parentX, parentY, childXP, childYP);
+		//Crossover both parent chromosomes
+		if (randomReal() <= crossoverProbability) {
+			crossoverOperator->crossover(parentX, parentY, childXP, childYP);
+
+			//If mutation is enabled, try to mutate the children
+			if (mutationEnabled) {
+				mutateChromosome(childXP);
+				mutateChromosome(childYP);
+			}
+		}
 	}
 
 }
@@ -292,24 +308,34 @@ inline bool GeneticAlgorithm::getElitism()
 	return elitism;
 }
 
-inline bool GeneticAlgorithm::getMutation()
+inline bool GeneticAlgorithm::isMutationEnabled()
 {
-	return mutation;
+	return mutationEnabled;
 }
 
-inline void GeneticAlgorithm::setMutation(bool mut)
+inline void GeneticAlgorithm::enableMutation(bool mut)
 {
-	mutation = mut;
+	mutationEnabled = mut;
 }
 
-inline float GeneticAlgorithm::getMutationRate()
+inline double GeneticAlgorithm::getMutationProbability()
 {
-	return mutationRate;
+	return mutationProbability;
 }
 
-inline void GeneticAlgorithm::setMutationRate(float rate)
+inline void GeneticAlgorithm::setMutationProbability(double prob)
 {
-	mutationRate = rate;
+	mutationProbability = prob;
+}
+
+inline double GeneticAlgorithm::getCrossoverProbability()
+{
+	return crossoverProbability;
+}
+
+inline void GeneticAlgorithm::setCrossoverProbability(double prob)
+{
+	crossoverProbability = prob;
 }
 
 inline void GeneticAlgorithm::setEliteSize(uint32_t amount)
@@ -340,7 +366,27 @@ inline vector<Gene*>* GeneticAlgorithm::getGenotype()
 	return genotype;
 }
 
-inline Chromosome * GeneticAlgorithm::getFirstChromosomeMatingRoulette(Population * pop, float probability)
+inline void GeneticAlgorithm::setMutationOperator(Mutation * mut)
+{
+	mutationOperator = mut;
+}
+
+inline Mutation * GeneticAlgorithm::getMutationOperator()
+{
+	return mutationOperator;
+}
+
+inline void GeneticAlgorithm::setCrossoverOperator(Crossover * cross)
+{
+	crossoverOperator = cross;
+}
+
+inline Crossover * GeneticAlgorithm::getCrossoverOperator()
+{
+	return crossoverOperator;
+}
+
+inline Chromosome * GeneticAlgorithm::getFirstChromosomeMatingRoulette(Population * pop, double probability)
 {
 	vector<Chromosome*>* population = pop->getChromosomes();
 
@@ -353,7 +399,7 @@ inline Chromosome * GeneticAlgorithm::getFirstChromosomeMatingRoulette(Populatio
 	return population->back(); //This should only happen if the last Chromosome has a normalized fitness less than 1
 }
 
-inline Chromosome * GeneticAlgorithm::getSecondChromosomeMatingRoulette(Population * pop, Chromosome * ind0, float probability)
+inline Chromosome * GeneticAlgorithm::getSecondChromosomeMatingRoulette(Population * pop, Chromosome * ind0, double probability)
 {
 
 	vector<Chromosome*>* population = pop->getChromosomes();
@@ -393,75 +439,15 @@ inline Chromosome * GeneticAlgorithm::getSecondChromosomeMatingRoulette(Populati
 	return lastChromosome;
 }
 
-inline void GeneticAlgorithm::mutateUniform(Chromosome * chromosome)
+inline void GeneticAlgorithm::mutateChromosome(Chromosome * chromosome)
 {
-	if (mutationRate < randomReal100())
-		return;
 
-	vector<Gene *> *genes = chromosome->getGenes();
-	for (vector<Gene *>::iterator it = genes->begin(); it != genes->end(); it++) {
-		Gene * gene = *it;
-		gene->initialize();
-	}
+	if (randomReal() <= mutationProbability)
+		mutationOperator->mutate(chromosome);
 
 }
 
 inline int32_t GeneticAlgorithm::getVariable(vector<int32_t>* variables, uint32_t position)
 {
 	return (*variables)[position];
-}
-
-
-
-void GeneticAlgorithm::crossOverUniform(Chromosome * parentX, Chromosome * parentY, Chromosome * childXP, Chromosome * childYP) {
-	/*
-	Uniform crossover
-	More info at: https://en.wikipedia.org/wiki/Crossover_(genetic_algorithm)
-
-	This function changes both parents to the result of the crossover operation
-	*/
-
-	bool first = false;
-
-	for (size_t i = 0; i < parentX->getGenes()->size(); i++) {
-		//First we iterate through the genes
-
-		Gene *genXV = (*parentX->getGenes())[i];
-		Gene *genYV = (*parentY->getGenes())[i];
-		//TODO
-		bitset<sizeof(uint64_t)*CHAR_BIT> bX(genXV->getValue().uint64Value);
-		bitset<sizeof(uint64_t)*CHAR_BIT> bY(genYV->getValue().uint64Value);		
-
-		for (size_t j = 0; j < sizeof(uint64_t)*CHAR_BIT; j++) {
-			//Then we iterate through the bits of each gene pair
-			if (i == parentX->getGenes()->size() - 1 && j == sizeof(uint64_t)*CHAR_BIT - 1) {
-				/*
-				The first bit is always kept untouched
-				This is a premise of crossover
-				*/
-				continue;
-			}
-
-			if (randomBinary()) {
-				/*
-				Set bitX[j] as bitY[j] and vice-versa
-				*/
-				bool bitX = bX.test(j);
-				bX[j] = bY[j];
-				bY[j] = bitX;
-			}
-		}
-
-		//Replace the children's old values with the new ones
-		GeneValue value;
-		value.uint64Value = bX.to_ullong();
-		(*childXP->getGenes())[i]->setValue(value);
-		value.uint64Value = bY.to_ullong();
-		(*childYP->getGenes())[i]->setValue(value);
-	}
-
-	if (mutation)
-		mutateUniform(childXP);
-	if (mutation)
-		mutateUniform(childYP);
 }

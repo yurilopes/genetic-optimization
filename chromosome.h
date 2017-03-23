@@ -6,8 +6,8 @@
 #include <random>
 #include "gene.h"
 
-#define MAXFLOATPRINT 99999.f
-#define MINFLOATPRINT -9999.f
+#define MAXFLOATPRINT 999.f
+#define MINFLOATPRINT -99.f
 
 extern mt19937 genGA;
 
@@ -33,7 +33,6 @@ class Chromosome{
         ~Chromosome();
         vector<Gene *>						*getGenes();
 		vector<Gene *>						*getGenotype();
-		void								setChromosome(Chromosome * chm);
 		double								calculateFitness();
 		double								addToAccFitness(double value);
         double								getFitness();
@@ -119,14 +118,6 @@ inline vector<Gene*> * Chromosome::getGenotype()
 	return genotype;
 }
 
-inline void Chromosome::setChromosome(Chromosome *chm)
-{
-	deleteGenes();
-	vector<Gene *> * ind = chm->getGenes();	
-	genes = ind;
-	genotype = chm->getGenotype();
-}
-
 double Chromosome::getFitness(){
     return fitness;
 }
@@ -193,10 +184,7 @@ inline void Chromosome::print()
 					printf("%7.5f", gen->getValue().doubleValue);
 				else
 					printf("%7.5e", gen->getValue().doubleValue);				
-				break;
-			case CUSTOM:
-				std::cout << uppercase << hex << gen->getValue().uint64Value << dec;
-				break;			
+				break;		
 		}		
 		std::cout << ", \t";
 	}

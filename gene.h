@@ -1,8 +1,6 @@
 #pragma once
 
-#include <vector>
-#include <climits>
-#include <iostream>
+#include <random>
 
 extern mt19937 genGA;
 
@@ -16,10 +14,16 @@ enum GeneDataType {
 	UINT64,
 	INT64,
 	FLOAT,
-	DOUBLE,
-	CUSTOM
+	DOUBLE
 };
 
+
+/*
+This union holds the value within a Gene
+
+It doesn't matter what data type you want to use ou read the gene value as.
+This means you can create and work with a float gene but at any point read its value as a int16_t as well
+*/
 union GeneValue {
 	float		floatValue;
 	double		doubleValue;
@@ -35,37 +39,35 @@ union GeneValue {
 
 class Gene {
 
-	protected:
-		GeneValue				value;
-		GeneDataType			dataType;		
-		GeneValue				minSeed;
-		GeneValue				maxSeed;
-		
-		//Properties for CUSTOM data type
-		uint64_t				lowerBound, upperBound;
+protected:
+	GeneValue				value;
+	GeneDataType			dataType;
+	GeneValue				minSeed;
+	GeneValue				maxSeed;
+	GeneValue				lowerBound;
+	GeneValue				upperBound;	
+	bool					boundingEnabled = false;
 
-	public:
-		Gene(GeneDataType dataTy);
-		Gene(Gene * original);		
-		GeneValue				getValue();
-		void					setValue(GeneValue val);
-		GeneDataType			getDataType();		
+public:
+	Gene(GeneDataType dataTy);
+	Gene(Gene * original);
+	GeneValue				getValue();
+	GeneValue				*getValuePointer(); //Mostly used for bitwise genetic operators
+	void					setValue(GeneValue val);
+	GeneDataType			getDataType();
 
-		void					setSeedRange(uint64_t lower, uint64_t upper);
-		void					setSeedRange(int64_t lower, int64_t upper);
-		void					setSeedRange(uint32_t lower, uint32_t upper);
-		void					setSeedRange(int32_t lower, int32_t upper);
-		void					setSeedRange(uint16_t lower, uint16_t upper);
-		void					setSeedRange(int16_t lower, int16_t upper);
-		void					setSeedRange(uint8_t lower, uint8_t upper);
-		void					setSeedRange(int8_t lower, int8_t upper);
-		void					setSeedRange(float lower, float upper);
-		void					setSeedRange(double lower, double upper);	
+	void					setSeedRange(GeneValue min, GeneValue max);
+	void					setBounds(GeneValue lower, GeneValue upper);
+	void					refreshValue(); //Useful when resetting the boundings of a gene
+	void					enableBounding(bool enable);
 
-		GeneValue				getMinimumSeed();
-		GeneValue				getMaximumSeed();	
+	bool					isBoundingEnabled();
+	GeneValue				getMinimumSeed();
+	GeneValue				getMaximumSeed();
+	GeneValue				getLowerBound();
+	GeneValue				getUpperBound();	
 
-		void					initialize();
+	void					initialize();
 };
 
 Gene::Gene(GeneDataType dataTy) {
@@ -75,12 +77,12 @@ Gene::Gene(GeneDataType dataTy) {
 	if (sizeof(double) > sizeof(uint64_t))
 		value.doubleValue = 0;
 	else
-		value.uint64Value = 0;	
+		value.uint64Value = 0;
 }
 
 inline Gene::Gene(Gene *original)
 {
-	dataType = original->getDataType();	
+	dataType = original->getDataType();
 
 	//Either double or uint64_t will be the biggest data field
 	minSeed = original->getMinimumSeed();
@@ -93,9 +95,93 @@ inline GeneValue Gene::getValue()
 	return value;
 }
 
+inline GeneValue * Gene::getValuePointer()
+{
+	return &value;
+}
+
 inline void Gene::setValue(GeneValue val)
 {
 	value = val;
+	if (!boundingEnabled)
+		return;
+
+	//If bounding is enabled we should clip the value if it goes out of bounds
+
+	switch (dataType)
+	{
+		case (FLOAT): {
+			if (value.floatValue < lowerBound.floatValue)
+				value = lowerBound;
+			if (value.floatValue > upperBound.floatValue)
+				value = upperBound;
+			break;
+		}
+		case (DOUBLE): {
+			if (value.doubleValue < lowerBound.doubleValue)
+				value = lowerBound;
+			if (value.doubleValue > upperBound.doubleValue)
+				value = upperBound;
+			break;
+		}
+		case (INT8): {
+			if (value.int8Value < lowerBound.int8Value)
+				value = lowerBound;
+			if (value.int8Value > upperBound.int8Value)
+				value = upperBound;
+			break;
+		}
+		case (UINT8): {
+			if (value.uint8Value < lowerBound.uint8Value)
+				value = lowerBound;
+			if (value.uint8Value > upperBound.uint8Value)
+				value = upperBound;
+			break;
+		}
+		case (INT16): {
+			if (value.int16Value < lowerBound.int16Value)
+				value = lowerBound;
+			if (value.int16Value > upperBound.int16Value)
+				value = upperBound;
+			break;
+		}
+		case (UINT16): {
+			if (value.uint16Value < lowerBound.uint16Value)
+				value = lowerBound;
+			if (value.uint16Value > upperBound.uint16Value)
+				value = upperBound;
+			break;
+		}
+		case (INT32): {
+			if (value.int32Value < lowerBound.int32Value)
+				value = lowerBound;
+			if (value.int32Value > upperBound.int32Value)
+				value = upperBound;
+			break;
+		}
+		case (UINT32): {
+			if (value.uint32Value < lowerBound.uint32Value)
+				value = lowerBound;
+			if (value.uint32Value > upperBound.uint32Value)
+				value = upperBound;
+			break;
+		}
+		case (INT64): {
+			if (value.int64Value < lowerBound.int64Value)
+				value = lowerBound;
+			if (value.int64Value > upperBound.int64Value)
+				value = upperBound;
+			break;
+		}
+		case (UINT64): {
+			if (value.uint64Value < lowerBound.uint64Value)
+				value = lowerBound;
+			if (value.uint64Value > upperBound.uint64Value)
+				value = upperBound;
+			break;
+		}
+	}
+
 }
 
 inline GeneDataType Gene::getDataType()
@@ -103,64 +189,31 @@ inline GeneDataType Gene::getDataType()
 	return dataType;
 }
 
-inline void Gene::setSeedRange(uint64_t lower, uint64_t upper)
+inline void Gene::setSeedRange(GeneValue min, GeneValue max)
 {
-	minSeed.uint64Value = lower;
-	maxSeed.uint64Value = upper;
+	minSeed = min;
+	maxSeed = max;
 }
 
-inline void Gene::setSeedRange(int64_t lower, int64_t upper)
+inline void Gene::setBounds(GeneValue lower, GeneValue upper)
 {
-	minSeed.int64Value = lower;
-	maxSeed.int64Value = upper;
+	lowerBound = lower;
+	upperBound = upper;
 }
 
-inline void Gene::setSeedRange(uint32_t lower, uint32_t upper)
+inline void Gene::refreshValue()
 {
-	minSeed.uint32Value = lower;
-	maxSeed.uint32Value = upper;
+	setValue(value);
 }
 
-inline void Gene::setSeedRange(int32_t lower, int32_t upper)
+inline void Gene::enableBounding(bool enable)
 {
-	minSeed.int32Value = lower;
-	maxSeed.int32Value = upper;
+	boundingEnabled = enable;
 }
 
-inline void Gene::setSeedRange(uint16_t lower, uint16_t upper)
+inline bool Gene::isBoundingEnabled()
 {
-	minSeed.uint16Value = lower;
-	maxSeed.uint16Value = upper;
-}
-
-inline void Gene::setSeedRange(int16_t lower, int16_t upper)
-{
-	minSeed.int16Value = lower;
-	maxSeed.int16Value = upper;
-}
-
-inline void Gene::setSeedRange(uint8_t lower, uint8_t upper)
-{
-	minSeed.uint8Value = lower;
-	maxSeed.uint8Value = upper;
-}
-
-inline void Gene::setSeedRange(int8_t lower, int8_t upper)
-{
-	minSeed.int8Value = lower;
-	maxSeed.int8Value = upper;
-}
-
-inline void Gene::setSeedRange(float lower, float upper)
-{
-	minSeed.floatValue = lower;
-	maxSeed.floatValue = upper;
-}
-
-inline void Gene::setSeedRange(double lower, double upper)
-{
-	minSeed.doubleValue = lower;
-	minSeed.doubleValue = upper;
+	return boundingEnabled;
 }
 
 inline GeneValue Gene::getMinimumSeed()
@@ -173,18 +226,28 @@ inline GeneValue Gene::getMaximumSeed()
 	return maxSeed;
 }
 
+inline GeneValue Gene::getLowerBound()
+{
+	return lowerBound;
+}
+
+inline GeneValue Gene::getUpperBound()
+{
+	return upperBound;
+}
+
 inline void Gene::initialize()
 {
 	switch (dataType)
 	{
-		case (FLOAT): { 			
-			uniform_real_distribution<float> randomF(minSeed.floatValue, maxSeed.floatValue);			
+		case (FLOAT): {
+			uniform_real_distribution<float> randomF(minSeed.floatValue, maxSeed.floatValue);
 			value.floatValue = randomF(genGA);
 			break;
 		}
 		case (DOUBLE): {
-			uniform_real_distribution<double> randomD(minSeed.doubleValue, maxSeed.doubleValue);			
-			value.doubleValue = randomD(genGA);			
+			uniform_real_distribution<double> randomD(minSeed.doubleValue, maxSeed.doubleValue);
+			value.doubleValue = randomD(genGA);
 			break;
 		}
 		case (INT8): {
@@ -264,10 +327,6 @@ inline void Gene::initialize()
 			GeneValue val;
 			val.uint64Value = randomI64(genGA);
 			value = val;
-			break;
-		}
-		default: {
-			//TODO: Set value for CUSTOM data type
 			break;
 		}
 	}

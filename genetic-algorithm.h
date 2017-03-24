@@ -17,10 +17,7 @@
 
 mt19937 genGA(static_cast<unsigned int>(std::time(0)));
 uniform_real_distribution<double> disR0_1(0.0, 1.0);
-uniform_int_distribution<int32_t> disI0_1(0, 1);
-
-#define randomReal() disR0_1(genGA)
-#define randomBinary() disI0_1(genGA)
+uniform_int_distribution<int16_t> disI0_1(0, 1);
 
 class GeneticAlgorithm {
 public:
@@ -55,7 +52,8 @@ public:
 	void				generateRouletteMatingPool();
 	void				crossOver();
 
-	static int32_t getVariable(vector<int32_t> *variables, uint32_t position);
+	static double		randomReal();
+	static uint16_t		randomBinary();
 
 	GeneticAlgorithm(vector<Gene *>	*gentyp);
 	~GeneticAlgorithm();
@@ -229,6 +227,16 @@ inline void GeneticAlgorithm::crossOver()
 		}
 	}
 
+}
+
+inline double GeneticAlgorithm::randomReal()
+{
+	return disR0_1(genGA);
+}
+
+inline uint16_t GeneticAlgorithm::randomBinary()
+{
+	return disI0_1(genGA);
 }
 
 inline GeneticAlgorithm::GeneticAlgorithm(vector<Gene*>* gentyp)
@@ -445,9 +453,4 @@ inline void GeneticAlgorithm::mutateChromosome(Chromosome * chromosome)
 	if (randomReal() <= mutationProbability)
 		mutationOperator->mutate(chromosome);
 
-}
-
-inline int32_t GeneticAlgorithm::getVariable(vector<int32_t>* variables, uint32_t position)
-{
-	return (*variables)[position];
 }

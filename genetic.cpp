@@ -5,6 +5,7 @@ using namespace std;
 
 #include "genetic-algorithm.h"
 #include "mutation-uniform.h"
+#include "mutation-gaussian.h"
 #include "crossover-uniform-bitwise.h"
 
 /*
@@ -107,11 +108,11 @@ double fitnessFunction(Chromosome * chromosome){
 }
 
 #define TOLERANCE			1e-4f
-#define IDEAL_FITNESS		115.0f
+#define OPTIMAL_FITNESS		115.0f
 #define MIN_SEED			0.0f
 #define MAX_SEED			40.0f
-#define POPULATION_SIZE		2000
-#define ITERATION_SHOW		10
+#define POPULATION_SIZE		3000
+#define ITERATION_SHOW		50
 
 int main(){
 
@@ -167,10 +168,11 @@ int main(){
 	ga.setCrossoverOperator(&cross);
 	ga.setCrossoverProbability(1.0f);
 	
-	MutationUniform mut;
+	vector<char> mutEnabled = { true, true, false, true };
+	MutationGaussian mut(0.0, 0.0005, &mutEnabled);
 	ga.setMutationOperator(&mut);
 	ga.enableMutation(true);
-	ga.setMutationProbability(0.1f);	
+	ga.setMutationProbability(0.01f);	
 	
 	ga.setFitnessFunction(fitnessFunction);
 
@@ -181,7 +183,12 @@ int main(){
 	uint64_t i;
 	for (i = 0; i < 0xFFFFFFFF; i++) {						
 
-		ga.calculateFitness();		
+		ga.calculateFitness();	
+
+		if (i == 500)
+			ga.setMutationProbability(0.05);
+		if (i == 900)
+			ga.setMutationProbability(0.1);
 
 		if (i % ITERATION_SHOW == 0) {
 			cout << "Iteration " << i << endl;
@@ -189,7 +196,7 @@ int main(){
 			ga.printFittestChromosome();
 		}
 		//system("pause");
-		if (abs(ga.getFittestChromosome()->getFitness() - IDEAL_FITNESS) <= TOLERANCE)
+		if (abs(ga.getFittestChromosome()->getFitness() - OPTIMAL_FITNESS) <= TOLERANCE)
 			break;
 
 		ga.selectionRoulette();	

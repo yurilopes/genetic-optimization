@@ -1,12 +1,26 @@
 #pragma once
 
 #include "crossover.h"
-#include "genetic-algorithm.h"
+#include <random>
 #include <bitset>
 
 class CrossoverUniformBitwise : public Crossover {
-	void		crossover(Chromosome * parentX, Chromosome * parentY, Chromosome * childX, Chromosome * childY);
+	protected:
+		std::uniform_int_distribution<uint16_t>		*distribution = NULL;
+		std::mt19937								*randomGen = NULL;
+		uint16_t									 randomBinary();
+
+	public:
+		void		crossover(Chromosome * parentX, Chromosome * parentY, Chromosome * childX, Chromosome * childY);
+
+		CrossoverUniformBitwise();
+		~CrossoverUniformBitwise();
 };
+
+inline uint16_t CrossoverUniformBitwise::randomBinary()
+{
+	return (*distribution)(*randomGen);
+}
 
 void CrossoverUniformBitwise::crossover(Chromosome * parentX, Chromosome * parentY, Chromosome * childX, Chromosome * childY) {
 	/*
@@ -24,9 +38,6 @@ void CrossoverUniformBitwise::crossover(Chromosome * parentX, Chromosome * paren
 	Treating the GeneValue structure as a uint64_t should be fine
 	double and uint64_t should have the same size (64 bits, 8 bytes) and they're the biggest data types in GeneValue
 	*/
-
-	bool first = false;
-
 	for (size_t i = 0; i < parentX->getGenes()->size(); i++) {
 		//First we iterate through the genes
 
@@ -38,7 +49,7 @@ void CrossoverUniformBitwise::crossover(Chromosome * parentX, Chromosome * paren
 
 		for (size_t j = 0; j < sizeof(uint64_t)*CHAR_BIT; j++) {
 			//Then we iterate through the bits of each gene pair
-			if (i == parentX->getGenes()->size() - 1 && j == sizeof(uint64_t)*CHAR_BIT - 1) {
+			if (i == 0 && j == sizeof(uint64_t)*CHAR_BIT - 1) {
 				/*
 				The first bit is always kept untouched
 				This is a premise of crossover
@@ -63,4 +74,18 @@ void CrossoverUniformBitwise::crossover(Chromosome * parentX, Chromosome * paren
 		value.uint64Value = bY.to_ullong();
 		(*childY->getGenes())[i]->setValue(value);
 	}
+}
+
+inline CrossoverUniformBitwise::CrossoverUniformBitwise()
+{
+	randomGen = new std::mt19937(static_cast<unsigned int>(std::time(0)));
+	distribution = new std::uniform_int_distribution<uint16_t>(0, 1);
+}
+
+inline CrossoverUniformBitwise::~CrossoverUniformBitwise()
+{
+	if (distribution)
+		delete distribution;
+	if (randomGen)
+		delete randomGen;
 }

@@ -11,4 +11,4 @@ Compile & run genetic.cpp using a C++11 compiler.
 
 ### Authors ###
 
-* Ryokusei
+* Yuri Lopes

@@ -111,7 +111,7 @@ double fitnessFunction(Chromosome * chromosome){
 #define OPTIMAL_FITNESS		115.0f
 #define MIN_SEED			0.0f
 #define MAX_SEED			40.0f
-#define POPULATION_SIZE		3000
+#define POPULATION_SIZE		2000
 #define ITERATION_SHOW		50
 
 int main(){
@@ -169,7 +169,7 @@ int main(){
 	ga.setCrossoverProbability(1.0f);
 	
 	vector<char> mutEnabled = { true, true, false, true };
-	MutationGaussian mut(0.0, 0.0005, &mutEnabled);
+	MutationGaussian mut(0.0, 0.005, &mutEnabled);
 	ga.setMutationOperator(&mut);
 	ga.enableMutation(true);
 	ga.setMutationProbability(0.01f);	
@@ -186,9 +186,9 @@ int main(){
 		ga.calculateFitness();	
 
 		if (i == 500)
-			ga.setMutationProbability(0.05);
-		if (i == 900)
-			ga.setMutationProbability(0.1);
+			ga.setMutationProbability(0.05f);
+		if (i == 900) 
+			ga.setMutationProbability(0.1f);					
 
 		if (i % ITERATION_SHOW == 0) {
 			cout << "Iteration " << i << endl;

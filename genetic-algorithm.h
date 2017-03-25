@@ -16,7 +16,7 @@
 #include "crossover.h"
 
 mt19937 genGA(static_cast<unsigned int>(std::time(0)));
-uniform_real_distribution<double> disR0_1(0.0, 1.0);
+uniform_real_distribution<float> disR0_1(0.0, 1.0);
 uniform_int_distribution<int16_t> disI0_1(0, 1);
 
 class GeneticAlgorithm {
@@ -32,10 +32,10 @@ public:
 	bool				getElitism();
 	bool				isMutationEnabled();
 	void				enableMutation(bool mut);
-	double				getMutationProbability();
-	void				setMutationProbability(double prob);
+	float				getMutationProbability();
+	void				setMutationProbability(float prob);
 	double				getCrossoverProbability();
-	void				setCrossoverProbability(double prob);
+	void				setCrossoverProbability(float prob);
 	void				setEliteSize(uint32_t amount);
 	uint32_t			getEliteSize();
 	size_t				getPopulationSize();
@@ -52,7 +52,7 @@ public:
 	void				generateRouletteMatingPool();
 	void				crossOver();
 
-	static double		randomReal();
+	static float		randomReal();
 	static uint16_t		randomBinary();
 
 	GeneticAlgorithm(vector<Gene *>	*gentyp);
@@ -68,8 +68,8 @@ protected:
 	bool				elitism = true;
 	uint32_t			eliteSize = 1;
 	bool				mutationEnabled = false;
-	double				mutationProbability = 0.01f;
-	double				crossoverProbability = 1.0f;
+	float				mutationProbability = 0.01f;
+	float				crossoverProbability = 1.0f;
 
 	static Chromosome * getFirstChromosomeMatingRoulette(Population * pop, double probability);
 	static Chromosome * getSecondChromosomeMatingRoulette(Population * pop, Chromosome * ind0, double probability);
@@ -229,7 +229,7 @@ inline void GeneticAlgorithm::crossOver()
 
 }
 
-inline double GeneticAlgorithm::randomReal()
+inline float GeneticAlgorithm::randomReal()
 {
 	return disR0_1(genGA);
 }
@@ -326,12 +326,12 @@ inline void GeneticAlgorithm::enableMutation(bool mut)
 	mutationEnabled = mut;
 }
 
-inline double GeneticAlgorithm::getMutationProbability()
+inline float GeneticAlgorithm::getMutationProbability()
 {
 	return mutationProbability;
 }
 
-inline void GeneticAlgorithm::setMutationProbability(double prob)
+inline void GeneticAlgorithm::setMutationProbability(float prob)
 {
 	mutationProbability = prob;
 }
@@ -341,7 +341,7 @@ inline double GeneticAlgorithm::getCrossoverProbability()
 	return crossoverProbability;
 }
 
-inline void GeneticAlgorithm::setCrossoverProbability(double prob)
+inline void GeneticAlgorithm::setCrossoverProbability(float prob)
 {
 	crossoverProbability = prob;
 }

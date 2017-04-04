@@ -115,6 +115,8 @@ inline void Gene::setValue(GeneValue val)
 				value = lowerBound;
 			if (value.floatValue > upperBound.floatValue)
 				value = upperBound;
+			if (isnan(value.floatValue))
+				initialize();
 			break;
 		}
 		case (DOUBLE): {
@@ -122,6 +124,8 @@ inline void Gene::setValue(GeneValue val)
 				value = lowerBound;
 			if (value.doubleValue > upperBound.doubleValue)
 				value = upperBound;
+			if (isnan(value.doubleValue))
+				initialize();
 			break;
 		}
 		case (INT8): {

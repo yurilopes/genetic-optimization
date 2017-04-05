@@ -1,11 +1,11 @@
 #pragma once
 
-#include "mutation.h"
+#include "mutationvectorized.h"
 #include "chromosome.h"
 #include <random>
 #include <math.h>
 
-class MutationGaussian : public Mutation {
+class MutationGaussian : public MutationVectorized {
 	protected:
 		double									mean;
 		double									stddev;
@@ -18,6 +18,7 @@ class MutationGaussian : public Mutation {
 
 	public:
 		void									mutate(Chromosome *chromosome);
+		void									mutate(Gene *gene);
 		double									getMean();
 		void									setMean(double m);
 		double									getStdDev();
@@ -59,70 +60,73 @@ inline void MutationGaussian::mutate(Chromosome* chromosome)
 	std::vector<Gene *> *genes = chromosome->getGenes();
 	size_t i = 0;
 	
-	for (std::vector<Gene *>::iterator it = genes->begin(); it != genes->end(); it++) {
-		Gene * gene = *it;
+	for (std::vector<Gene *>::iterator it = genes->begin(); it != genes->end(); it++) {		
 
 		if (!(*mutationEnabled)[i])
-			continue;
+			continue;		
 
-		double randomNum = (*distribution)(*randomGen);
-		GeneValue newValue;
-
-		switch (gene->getDataType())
-		{
-			case (FLOAT): {
-				newValue.floatValue = gene->getValue().floatValue + (float)randomNum;
-				gene->setValue(newValue);
-				break;
-			}
-			case (DOUBLE): {
-				newValue.doubleValue = gene->getValue().doubleValue + randomNum;
-				gene->setValue(newValue);
-				break;
-			}
-			case (INT8): {
-				newValue.int8Value = gene->getValue().int8Value + (int8_t)round(randomNum);
-				gene->setValue(newValue);				
-				break;
-			}
-			case (UINT8): {
-				newValue.uint8Value = (uint8_t)(gene->getValue().int8Value + (int8_t)round(randomNum));
-				gene->setValue(newValue);
-				break;
-			}
-			case (INT16): {
-				newValue.int16Value = gene->getValue().int16Value + (int16_t)round(randomNum);
-				gene->setValue(newValue);
-				break;
-			}
-			case (UINT16): {
-				newValue.uint16Value = (uint16_t)(gene->getValue().int16Value + (int16_t)round(randomNum));
-				gene->setValue(newValue);
-				break;
-			}
-			case (INT32): {
-				newValue.int32Value = gene->getValue().int32Value + (int32_t)round(randomNum);
-				gene->setValue(newValue);
-				break;
-			}
-			case (UINT32): {
-				newValue.uint32Value = (uint32_t)(gene->getValue().int32Value + (int32_t)round(randomNum));
-				gene->setValue(newValue);
-				break;
-			}
-			case (INT64): {
-				newValue.int64Value = gene->getValue().int64Value + (int64_t)round(randomNum);
-				gene->setValue(newValue);				
-				break;
-			}
-			case (UINT64): {
-				newValue.uint64Value = (uint64_t)(gene->getValue().int64Value + (int64_t)round(randomNum));
-				gene->setValue(newValue);
-				break;
-			}
-		}
+		mutate(*it);
 
 		i++;
+	}
+}
+
+inline void MutationGaussian::mutate(Gene* gene) {
+	double randomNum = (*distribution)(*randomGen);
+	GeneValue newValue;
+
+	switch (gene->getDataType())
+	{
+		case (FLOAT): {
+			newValue.floatValue = gene->getValue().floatValue + (float)randomNum;
+			gene->setValue(newValue);
+			break;
+		}
+		case (DOUBLE): {
+			newValue.doubleValue = gene->getValue().doubleValue + randomNum;
+			gene->setValue(newValue);
+			break;
+		}
+		case (INT8): {
+			newValue.int8Value = gene->getValue().int8Value + (int8_t)round(randomNum);
+			gene->setValue(newValue);
+			break;
+		}
+		case (UINT8): {
+			newValue.uint8Value = (uint8_t)(gene->getValue().int8Value + (int8_t)round(randomNum));
+			gene->setValue(newValue);
+			break;
+		}
+		case (INT16): {
+			newValue.int16Value = gene->getValue().int16Value + (int16_t)round(randomNum);
+			gene->setValue(newValue);
+			break;
+		}
+		case (UINT16): {
+			newValue.uint16Value = (uint16_t)(gene->getValue().int16Value + (int16_t)round(randomNum));
+			gene->setValue(newValue);
+			break;
+		}
+		case (INT32): {
+			newValue.int32Value = gene->getValue().int32Value + (int32_t)round(randomNum);
+			gene->setValue(newValue);
+			break;
+		}
+		case (UINT32): {
+			newValue.uint32Value = (uint32_t)(gene->getValue().int32Value + (int32_t)round(randomNum));
+			gene->setValue(newValue);
+			break;
+		}
+		case (INT64): {
+			newValue.int64Value = gene->getValue().int64Value + (int64_t)round(randomNum);
+			gene->setValue(newValue);
+			break;
+		}
+		case (UINT64): {
+			newValue.uint64Value = (uint64_t)(gene->getValue().int64Value + (int64_t)round(randomNum));
+			gene->setValue(newValue);
+			break;
+		}
 	}
 }
 

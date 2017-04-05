@@ -2,7 +2,94 @@
 
 #define	PUNISHMENT_FACTOR		1e3f
 
+bool show = false;
+
 #include "genetic-algorithm.h"
+
+vector<Gene*> *getGenotype3() {
+	GeneValue minSeed, maxSeed, minSeed2, maxSeed2, minSeed3, maxSeed3;
+	vector<Gene *> *genotype = new vector<Gene *>();
+
+	minSeed.floatValue = 0.2f;
+	maxSeed.floatValue = 1.0f;
+
+	minSeed3.floatValue = -2.22554f;
+	maxSeed3.floatValue = -1.0f;
+	
+	minSeed2.uint8Value = 0;
+	maxSeed2.uint8Value = 1;
+
+	Gene *gene = new Gene(FLOAT);
+	gene->setSeedRange(minSeed, maxSeed);
+	gene->enableBounding(true);
+	gene->setBounds(minSeed, maxSeed);
+	genotype->push_back(gene);
+
+	gene = new Gene(FLOAT);
+	gene->setSeedRange(minSeed3, maxSeed3);
+	gene->enableBounding(true);
+	gene->setBounds(minSeed3, maxSeed3);
+	genotype->push_back(gene);
+
+	gene = new Gene(UINT8);
+	gene->setSeedRange(minSeed2, maxSeed2);
+	gene->enableBounding(true);
+	gene->setBounds(minSeed2, maxSeed2);
+	genotype->push_back(gene);
+
+	return genotype;
+}
+
+
+double fitnessFunction3(Chromosome * chromosome) {
+	//http://www.zweigmedia.com/RealWorld/simplex.html
+
+	float x1 = (*chromosome->getGenes())[0]->getValue().floatValue;	
+	float x2 = (*chromosome->getGenes())[1]->getValue().floatValue;
+	float y = (float)(*chromosome->getGenes())[2]->getValue().uint8Value;
+
+	//We have to check if the float/double values are valid
+	if (isnan(x1) || isinf(x1))
+		return -INFINITY;
+	if (isnan(x2) || isinf(x2))
+		return -INFINITY;
+
+	double fitness = -(-0.7f*y + 5.0f*pow(x1 - 0.5f, 2.0f) + 0.8f);
+	double punish = 0;
+
+	bool violated = false;
+	float violations[3] = { 0, 0, 0};	
+
+	if (-exp(x1 - 0.2f) - x2 > 0) {
+		violated = true;
+		violations[0] = -exp(x1 - 0.2f) - x2;
+	}
+	if (x2 + 1.1f*y > -1.0f) {
+		violated = true;
+		violations[1] = -1.0f - (x2 + 1.1f*y);
+	}
+	if (x1 - 1.2f*y > 0.2f) {
+		violated = true;
+		violations[2] = 0.2f - (x1 - 1.2f*y);
+	}
+
+	if (violated) {
+		punish = 0;
+		for (int i = 0; i <3; i++)
+			punish += abs(violations[i]);
+		punish *= -PUNISHMENT_FACTOR;
+	}
+
+	if (show) {
+		cout << "F: " << fitness << endl;
+		cout << "P: " << punish << endl;
+		cout << "S: " << fitness + punish << endl;
+		system("pause");
+		show = false;
+	}
+	
+	return fitness + punish;
+}
 
 vector<Gene*> *getGenotype2d() {
 	GeneValue minSeed, maxSeed, minSeed2, maxSeed2;

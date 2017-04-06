@@ -16,14 +16,14 @@ using namespace std;
 #define OPTIMAL_FITNESS		-1.07654f
 #define POPULATION_SIZE		2000
 #define ITERATION_SHOW		10
-#define ELITE_SIZE			50
+#define ELITE_SIZE			25
 #define CROSSOVER_PROB		1.0f
 #define MUTATION_PROB		0.05f
 
 int main(){	
 
-	GeneticAlgorithm ga(getGenotype3());
-	ga.setFitnessFunction(fitnessFunction3);
+	GeneticAlgorithm ga(getGenotype2());
+	ga.setFitnessFunction(fitnessFunction2);
 
 	ga.setElitism(true);	
 	ga.setEliteSize(ELITE_SIZE);
@@ -32,12 +32,17 @@ int main(){
 	ga.setCrossoverOperator(&cross);
 	ga.setCrossoverProbability(CROSSOVER_PROB);
 		
-	MutationGaussian mutGauss(0.0, 0.05);
+	/*
+	MutationGaussian mutGauss(0.0, 0.005);
 	MutationUniform mutUniform;
 	vector<MutationVectorized *> mutVect;
 	mutVect.push_back(&mutGauss);
 	mutVect.push_back(&mutUniform);
 	MutationVector mut(mutVect); 
+	*/
+
+	//MutationUniform mut;
+	MutationGaussian mut(0.0, 0.0005);
 	
 	ga.setMutationOperator(&mut);
 	ga.enableMutation(true);

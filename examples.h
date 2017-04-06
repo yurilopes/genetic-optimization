@@ -1,10 +1,197 @@
 #pragma once
 
-#define	PUNISHMENT_FACTOR		1e3f
-
-bool show = false;
+#define	PUNISHMENT_FACTOR		-1e3f
 
 #include "genetic-algorithm.h"
+
+vector<Gene*> *getGenotype5() {
+	GeneValue minSeed, maxSeed, minSeed2, maxSeed2;
+	vector<Gene *> *genotype = new vector<Gene *>();
+
+	minSeed.floatValue = 0.0f;
+	maxSeed.floatValue = 5.0f;
+
+	minSeed2.uint8Value = 0;
+	maxSeed2.uint8Value = 1;
+	
+	Gene * gene;
+
+	//x1..x3
+	for (int i = 0; i < 3; i++) {
+		gene = new Gene(FLOAT);
+		gene->setSeedRange(minSeed, maxSeed);
+		gene->enableBounding(true);
+		gene->setBounds(minSeed, maxSeed);
+		genotype->push_back(gene);
+	}
+		
+	//y1..y4
+	for (int i = 0; i < 4; i++) {
+		gene = new Gene(UINT8);
+		gene->setSeedRange(minSeed2, maxSeed2);
+		gene->enableBounding(true);
+		gene->setBounds(minSeed2, maxSeed2);
+		genotype->push_back(gene);
+	}
+
+	return genotype;
+}
+
+
+double fitnessFunction5(Chromosome * chromosome) {
+	//http://www.zweigmedia.com/RealWorld/simplex.html
+
+	float x1 = (*chromosome->getGenes())[0]->getValue().floatValue;
+	float x2 = (*chromosome->getGenes())[1]->getValue().floatValue;
+	float x3 = (*chromosome->getGenes())[2]->getValue().floatValue;
+	float y1 = (float)(*chromosome->getGenes())[3]->getValue().uint8Value;
+	float y2 = (float)(*chromosome->getGenes())[4]->getValue().uint8Value;
+	float y3 = (float)(*chromosome->getGenes())[5]->getValue().uint8Value;
+	float y4 = (float)(*chromosome->getGenes())[6]->getValue().uint8Value;
+
+	//We have to check if the float/double values are valid
+	if (isnan(x1) || isinf(x1))
+		return -INFINITY;
+	if (isnan(x2) || isinf(x2))
+		return -INFINITY;
+	if (isnan(x3) || isinf(x3))
+		return -INFINITY;
+
+	double fitness = -(pow((y1 - 1.0f), 2.0f) + pow((y2 - 1.0f), 2.0f) + pow((y3 - 1.0f), 2.0f) - log(y4 + 1.0f) + pow((x1 - 1.0f), 2.0f) + pow((x2 - 1.0f), 2.0f) + pow((x3 - 1.0f), 2.0f));
+	double punish = 0;
+
+	bool violated = false;
+	float violations[9] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
+	if (y1 + y2 + y3 + x1 + x2 + x3 > 5.0f) {
+		violated = true;
+		violations[0] = 5.0f - (y1 + y2 + y3 + x1 + x2 + x3);
+	}
+	if (pow(y3, 2.0f) + pow(x1, 2.0f) + pow(x2, 2.0f) + pow(x3, 2.0f) > 5.5f) {
+		violated = true;
+		violations[1] = 5.5f - (pow(y3, 2.0f) + pow(x1, 2.0f) + pow(x2, 2.0f) + pow(x3, 2.0f));
+	}
+	if (y1 + x1 > 1.2f) {
+		violated = true;
+		violations[2] = 1.2f - (y1 + x1);
+	}
+	if (y2 + x2 > 1.8f) {
+		violated = true;
+		violations[3] = 1.8f - (y2 + x2);
+	}
+	if (y3 + x3 > 2.5f) {
+		violated = true;
+		violations[4] = 2.5f - (y3 + x3);
+	}
+	if (y4 + x1 > 1.2f) {
+		violated = true;
+		violations[5] = 1.2f - (y4 + x1);
+	}
+	if (pow(y2, 2.0f) + pow(x2, 2.0f) > 1.64f) {
+		violated = true;
+		violations[6] = 1.64f - (pow(y2, 2.0f) + pow(x2, 2.0f));
+	}
+	if (pow(y3, 2.0f) + pow(x3, 2.0f) > 4.25f) {
+		violated = true;
+		violations[7] = 4.25f - (pow(y3, 2.0f) + pow(x3, 2.0f));
+	}
+	if (pow(y2, 2.0f) + pow(x3, 2.0f) > 4.64f) {
+		violated = true;
+		violations[8] = 4.64f - (pow(y2, 2.0f) + pow(x3, 2.0f));
+	}
+
+	if (violated) {
+		punish = 0;
+		for (int i = 0; i <9; i++)
+			punish += abs(violations[i]);
+		punish *= PUNISHMENT_FACTOR;
+	}
+
+	return fitness + punish;
+}
+
+vector<Gene*> *getGenotype4() {
+	GeneValue minSeed, maxSeed, minSeed2, maxSeed2;
+	vector<Gene *> *genotype = new vector<Gene *>();
+
+	minSeed.floatValue = 3.514237f;
+	maxSeed.floatValue = 3.514237f;
+
+	minSeed2.uint8Value = 0;
+	maxSeed2.uint8Value = 1;
+
+	//y
+	Gene *gene = new Gene(UINT8);
+	gene->setSeedRange(minSeed2, maxSeed2);
+	gene->enableBounding(true);
+	gene->setBounds(minSeed2, maxSeed2);
+	genotype->push_back(gene);
+
+	//v1
+	gene = new Gene(FLOAT);
+	gene->setSeedRange(minSeed, maxSeed);
+	gene->enableBounding(true);
+	gene->setBounds(minSeed, maxSeed);
+	genotype->push_back(gene);
+
+	minSeed.floatValue = 0.0f;
+	maxSeed.floatValue = 0.0f;
+
+	//v2
+	gene = new Gene(FLOAT);
+	gene->setSeedRange(minSeed, maxSeed);
+	gene->enableBounding(true);
+	gene->setBounds(minSeed, maxSeed);
+	genotype->push_back(gene);
+
+	return genotype;
+}
+
+double fitnessFunction4(Chromosome * chromosome) {
+	//http://www.zweigmedia.com/RealWorld/simplex.html
+	
+	float y = (float)(*chromosome->getGenes())[0]->getValue().uint8Value;
+	float v1 = (*chromosome->getGenes())[1]->getValue().floatValue;
+	float v2 = (*chromosome->getGenes())[2]->getValue().floatValue;
+
+	//We have to check if the float/double values are valid
+	if (isnan(v1) || isinf(v1))
+		return -INFINITY;
+	if (isnan(v2) || isinf(v2))
+		return -INFINITY;
+
+	double fitness = -(7.5f*y + 5.5f*(1.0f - y) + 7*v1 + 6*v2 + (50.0f*(1.0f - y) / (0.8f*(1.0f - exp(-0.4f * v2)))) + (50.0f * y / (0.9f*(1.0f - exp(-0.5f * v1)))));
+	double punish = 0;
+
+	bool violated = false;
+	float violations[4] = { 0, 0, 0, 0 };
+
+	if ((0.9f*(1.0f - exp(-0.5f * v1))) - 2.0f*y > 0) {
+		violated = true;
+		violations[0] = (0.9f*(1.0f - exp(-0.5f * v1))) - 2.0f*y;
+	}
+	if ((0.8f*(1.0f - exp(-0.4f * v2))) - 2.0f*(1.0f - y) > 0) {
+		violated = true;
+		violations[1] = (0.8f*(1.0f - exp(-0.4f * v2))) - 2.0f*(1.0f - y);
+	}
+	if (v1 > 10.0f*y) {
+		violated = true;
+		violations[2] = 10.0f*y - v1;
+	}
+	if (v2 > 10.0f*(1.0f - y)) {
+		violated = true;
+		violations[2] = 10.0f*(1.0f - y) - v2;
+	}
+
+	if (violated) {
+		punish = 0;
+		for (int i = 0; i <4; i++)
+			punish += abs(violations[i]);
+		punish *= PUNISHMENT_FACTOR;
+	}
+
+	return fitness + punish;
+}
 
 vector<Gene*> *getGenotype3() {
 	GeneValue minSeed, maxSeed, minSeed2, maxSeed2, minSeed3, maxSeed3;
@@ -77,21 +264,13 @@ double fitnessFunction3(Chromosome * chromosome) {
 		punish = 0;
 		for (int i = 0; i <3; i++)
 			punish += abs(violations[i]);
-		punish *= -PUNISHMENT_FACTOR;
-	}
-
-	if (show) {
-		cout << "F: " << fitness << endl;
-		cout << "P: " << punish << endl;
-		cout << "S: " << fitness + punish << endl;
-		system("pause");
-		show = false;
+		punish *= PUNISHMENT_FACTOR;
 	}
 	
 	return fitness + punish;
 }
 
-vector<Gene*> *getGenotype2d() {
+vector<Gene*> *getGenotype2() {
 	GeneValue minSeed, maxSeed, minSeed2, maxSeed2;
 	vector<Gene *> *genotype = new vector<Gene *>();
 
@@ -114,7 +293,7 @@ vector<Gene*> *getGenotype2d() {
 	return genotype;
 }
 
-double fitnessFunction2d(Chromosome * chromosome) {
+double fitnessFunction2(Chromosome * chromosome) {
 	//http://www.zweigmedia.com/RealWorld/simplex.html
 
 	float x1 = (*chromosome->getGenes())[0]->getValue().floatValue;	
@@ -152,7 +331,7 @@ double fitnessFunction2d(Chromosome * chromosome) {
 	if (violated) {
 		punish = 0;
 		for (int i = 0; i <3; i++)
-			punish -= abs(violations[i]);
+			punish += abs(violations[i]);
 		punish *= PUNISHMENT_FACTOR;
 	}
 
@@ -160,7 +339,7 @@ double fitnessFunction2d(Chromosome * chromosome) {
 }
 
 
-vector<Gene*> *getGenotype2() {
+vector<Gene*> *getGenotype2d() {
 	GeneValue minSeed, maxSeed, minSeed2, maxSeed2;
 	vector<Gene *> *genotype = new vector<Gene *>();
 
@@ -188,7 +367,7 @@ vector<Gene*> *getGenotype2() {
 }
 
 
-double fitnessFunction2(Chromosome * chromosome) {
+double fitnessFunction2d(Chromosome * chromosome) {
 	//http://www.zweigmedia.com/RealWorld/simplex.html
 
 	float x1 = (*chromosome->getGenes())[0]->getValue().floatValue;
@@ -233,7 +412,7 @@ double fitnessFunction2(Chromosome * chromosome) {
 	if (violated) {
 		punish = 0;
 		for (int i = 0; i <4; i++)
-			punish -= abs(violations[i]);
+			punish += abs(violations[i]);
 		punish *= PUNISHMENT_FACTOR;
 	}
 
@@ -301,7 +480,7 @@ double fitnessFunction1(Chromosome * chromosome) {
 	if (violated) {
 		punish = 0;
 		for (int i = 0; i <4; i++)
-			punish -= abs(violations[i]);
+			punish += abs(violations[i]);
 		punish *= PUNISHMENT_FACTOR;
 	}
 

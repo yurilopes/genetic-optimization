@@ -15,15 +15,15 @@ using namespace std;
 
 #define OPTIMAL_FITNESS		-1.07654f
 #define POPULATION_SIZE		2000
-#define ITERATION_SHOW		10
+#define ITERATION_SHOW		1
 #define ELITE_SIZE			25
 #define CROSSOVER_PROB		1.0f
 #define MUTATION_PROB		0.05f
 
 int main(){	
 
-	GeneticAlgorithm ga(getGenotype2());
-	ga.setFitnessFunction(fitnessFunction2);
+	GeneticAlgorithm ga(getGenotype3());
+	ga.setFitnessFunction(fitnessFunction3);
 
 	ga.setElitism(true);	
 	ga.setEliteSize(ELITE_SIZE);
@@ -42,7 +42,7 @@ int main(){
 	*/
 
 	//MutationUniform mut;
-	MutationGaussian mut(0.0, 0.05);
+	MutationGaussian mut(0.0, 0.0005);
 	
 	ga.setMutationOperator(&mut);
 	ga.enableMutation(true);
@@ -59,14 +59,12 @@ int main(){
 
 
 		if (i % ITERATION_SHOW == 0) {
-			cout << "Iteration " << i << endl;
+			cout << "Iteration " << i << " | P: " << ga.getPopulationSize() << endl;
+			cout << "Survival size: " << ga.getPopulationSurvivalSize() << endl;
 			cout << "Fittest chromosome:" << endl;
 			ga.printFittestChromosome();
-			//cout << "Fitness: ";
-			//show = true;
-			//cout << fitnessFunction3(ga.getFittestChromosome()) << endl; 
 		}
-		//system("pause");
+
 		if (abs(ga.getFittestChromosome()->getFitness() - OPTIMAL_FITNESS) <= ERROR_FITNESS)
 			break;
 
@@ -74,8 +72,8 @@ int main(){
 		ga.generateRouletteMatingPool();
 		ga.crossOver();
 
-		if (i >= 500)
-			ga.evolutionStrategy(4);
+		if (i >= 100)
+			ga.evolutionStrategy(4, true);
 	}
 
 	clock_t timeEnd = clock(); //Ending time

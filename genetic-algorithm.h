@@ -56,7 +56,7 @@ public:
 	void				crossOver();
 
 	//Evolution Strategy
-	void				evolutionStrategy(size_t numberOffsprings);
+	void				evolutionStrategy(size_t numberOffsprings, bool eliteOnly);
 
 	static float		randomReal();
 	static uint16_t		randomBinary();
@@ -235,7 +235,7 @@ inline void GeneticAlgorithm::crossOver()
 
 }
 
-inline void GeneticAlgorithm::evolutionStrategy(size_t numberOffsprings)
+inline void GeneticAlgorithm::evolutionStrategy(size_t numberOffsprings, bool eliteOnly = true)
 {
 
 	/*
@@ -250,28 +250,26 @@ inline void GeneticAlgorithm::evolutionStrategy(size_t numberOffsprings)
 	//Create a vector to hold the mutated chromosomes
 	vector<Chromosome*> mutatedChms;
 
+	size_t i = 0;
+
 	for (vector<Chromosome*>::iterator itr = gPopulation->getChromosomes()->begin(); itr != gPopulation->getChromosomes()->end(); itr++) {
 		Chromosome *chm = *itr;
 
-		cout << "Original: " << endl;
-		chm->print();
 		//For each chromosome we generate numberOffspring clones, mutate them and add the to our vector
 		for (size_t i = 0; i < numberOffsprings; i++) {			
 			//Clone the original chromosome
 			Chromosome *mutatedChm = new Chromosome(chm);
 			//Mutate our clone
 			mutationOperator->mutate(mutatedChm);
-
-			cout << "Mutated: " << endl;
-			mutatedChm->calculateFitness();
-			mutatedChm->print();
-
 			//Add to mutated chromosomes' vector
 			mutatedChms.push_back(mutatedChm);
 		}
-		cout << "------------------------------" << endl;
-		system("pause");
 
+		if (eliteOnly) {
+			i++;
+			if (i >= eliteSize)
+				break;
+		}
 	}
 
 	//Add the mutated chromosomes to our population
@@ -334,6 +332,7 @@ inline void GeneticAlgorithm::initializePopulation(uint32_t populationSize)
 	if (gPopulation != NULL)
 		delete gPopulation;
 
+	populationSurvivalSize = populationSize;
 	gPopulation = new Population(genotype);
 	gPopulation->initialize(populationSize, fitnessFunc);
 }
@@ -343,8 +342,11 @@ inline void GeneticAlgorithm::calculateFitness()
 	if (gPopulation != NULL)
 		gPopulation->calculateFitness();
 
-	if (getPopulationSize() > getPopulationSurvivalSize()) { //Population size is greater than the survival threshold
-
+	if (getPopulationSize() > populationSurvivalSize) { //Population size is greater than the survival threshold
+		//Remove the worst chromosomes, end their lives
+		for (size_t i = getPopulationSize() - 1; i >= populationSurvivalSize; i--) {
+			gPopulation->getChromosomes()->pop_back();
+		}
 	}
 }
 

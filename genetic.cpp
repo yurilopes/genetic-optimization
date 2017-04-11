@@ -15,7 +15,7 @@ using namespace std;
 
 #define OPTIMAL_FITNESS		-1.07654f
 #define POPULATION_SIZE		2000
-#define ITERATION_SHOW		1
+#define ITERATION_SHOW		50
 #define ELITE_SIZE			25
 #define CROSSOVER_PROB		1.0f
 #define MUTATION_PROB		0.05f
@@ -59,8 +59,7 @@ int main(){
 
 
 		if (i % ITERATION_SHOW == 0) {
-			cout << "Iteration " << i << " | P: " << ga.getPopulationSize() << endl;
-			cout << "Survival size: " << ga.getPopulationSurvivalSize() << endl;
+			cout << "Iteration " << i << endl;
 			cout << "Fittest chromosome:" << endl;
 			ga.printFittestChromosome();
 		}

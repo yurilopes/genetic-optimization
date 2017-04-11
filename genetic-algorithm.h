@@ -345,6 +345,7 @@ inline void GeneticAlgorithm::calculateFitness()
 	if (getPopulationSize() > populationSurvivalSize) { //Population size is greater than the survival threshold
 		//Remove the worst chromosomes, end their lives
 		for (size_t i = getPopulationSize() - 1; i >= populationSurvivalSize; i--) {
+			delete gPopulation->getChromosomes()->back();
 			gPopulation->getChromosomes()->pop_back();
 		}
 	}

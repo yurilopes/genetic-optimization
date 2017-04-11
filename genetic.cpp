@@ -11,11 +11,11 @@ using namespace std;
 
 #include "examples.h"
 
-#define ERROR_FITNESS		1e-3f
+#define ERROR_FITNESS		1e-4f
 
 #define OPTIMAL_FITNESS		-1.07654f
 #define POPULATION_SIZE		2000
-#define ITERATION_SHOW		50
+#define ITERATION_SHOW		10
 #define ELITE_SIZE			25
 #define CROSSOVER_PROB		1.0f
 #define MUTATION_PROB		0.05f

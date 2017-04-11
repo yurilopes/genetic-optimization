@@ -39,6 +39,8 @@ public:
 	void				setEliteSize(uint32_t amount);
 	uint32_t			getEliteSize();
 	size_t				getPopulationSize();
+	size_t				getPopulationSurvivalSize();
+	void				setPopulationSurvivalSize(size_t siz);
 	void				printMatingPool();
 	Chromosome			*getFittestChromosome();
 	vector<Gene *>		*getGenotype();
@@ -48,9 +50,13 @@ public:
 	Crossover			*getCrossoverOperator();
 
 
+	//General operations
 	void				selectionRoulette();
 	void				generateRouletteMatingPool();
 	void				crossOver();
+
+	//Evolution Strategy
+	void				evolutionStrategy(size_t numberOffsprings);
 
 	static float		randomReal();
 	static uint16_t		randomBinary();
@@ -61,7 +67,7 @@ public:
 protected:
 	vector<Gene *>		*genotype;
 	Population			*gPopulation = NULL, *gMatingPool = NULL;
-	uint32_t			populationSize = 0;
+	size_t				populationSurvivalSize = 0;
 	FitnessFunction		fitnessFunc = NULL;
 	Crossover			*crossoverOperator = NULL;
 	Mutation			*mutationOperator = NULL;
@@ -229,6 +235,49 @@ inline void GeneticAlgorithm::crossOver()
 
 }
 
+inline void GeneticAlgorithm::evolutionStrategy(size_t numberOffsprings)
+{
+
+	/*
+	This operator generates numberOffsprings chromosomes from each chromosome in the population via mutation.
+	This causes a nonpunitive convergence for mutations, i.e., chromosomes are able to mutate and the mutation persists
+	only if it is a good mutation
+	*/
+
+	if (!mutationOperator)
+		return;	
+
+	//Create a vector to hold the mutated chromosomes
+	vector<Chromosome*> mutatedChms;
+
+	for (vector<Chromosome*>::iterator itr = gPopulation->getChromosomes()->begin(); itr != gPopulation->getChromosomes()->end(); itr++) {
+		Chromosome *chm = *itr;
+
+		cout << "Original: " << endl;
+		chm->print();
+		//For each chromosome we generate numberOffspring clones, mutate them and add the to our vector
+		for (size_t i = 0; i < numberOffsprings; i++) {			
+			//Clone the original chromosome
+			Chromosome *mutatedChm = new Chromosome(chm);
+			//Mutate our clone
+			mutationOperator->mutate(mutatedChm);
+
+			cout << "Mutated: " << endl;
+			mutatedChm->calculateFitness();
+			mutatedChm->print();
+
+			//Add to mutated chromosomes' vector
+			mutatedChms.push_back(mutatedChm);
+		}
+		cout << "------------------------------" << endl;
+		system("pause");
+
+	}
+
+	//Add the mutated chromosomes to our population
+	gPopulation->getChromosomes()->insert(gPopulation->getChromosomes()->end(), mutatedChms.begin(), mutatedChms.end());
+}
+
 inline float GeneticAlgorithm::randomReal()
 {
 	return disR0_1(genGA);
@@ -258,6 +307,16 @@ inline size_t GeneticAlgorithm::getPopulationSize()
 		return gPopulation->getChromosomes()->size();
 }
 
+inline size_t GeneticAlgorithm::getPopulationSurvivalSize()
+{
+	return populationSurvivalSize;
+}
+
+inline void GeneticAlgorithm::setPopulationSurvivalSize(size_t siz)
+{
+	populationSurvivalSize = siz;
+}
+
 inline void GeneticAlgorithm::setFitnessFunction(FitnessFunction fitFunc)
 {
 	fitnessFunc = fitFunc;
@@ -283,6 +342,10 @@ inline void GeneticAlgorithm::calculateFitness()
 {
 	if (gPopulation != NULL)
 		gPopulation->calculateFitness();
+
+	if (getPopulationSize() > getPopulationSurvivalSize()) { //Population size is greater than the survival threshold
+
+	}
 }
 
 inline void GeneticAlgorithm::printPopulation()

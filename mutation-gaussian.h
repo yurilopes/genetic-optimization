@@ -11,7 +11,6 @@ class MutationGaussian : public MutationVectorized {
 		double									stddev;
 		std::normal_distribution<double>		*distribution = NULL;
 		std::mt19937							*randomGen = NULL;
-		std::vector<char>						*mutationEnabled = NULL;
 		void									initialize(double m, double sdev);
 
 		void									refreshDistribution();
@@ -24,8 +23,7 @@ class MutationGaussian : public MutationVectorized {
 		double									getStdDev();
 		void									setStdDev(double s);
 
-		MutationGaussian(double m, double sdev);
-		MutationGaussian(double m, double sdev, std::vector<char> *mutEnabled);
+		MutationGaussian(double m, double sdev);		
 		~MutationGaussian();
 		
 };
@@ -51,19 +49,10 @@ inline void MutationGaussian::refreshDistribution()
 inline void MutationGaussian::mutate(Chromosome* chromosome)
 {
 
-	if (!mutationEnabled) {
-		mutationEnabled = new vector<char>();
-		for (size_t i = 0; i < chromosome->getGenes()->size(); i++)
-			mutationEnabled->push_back(true);
-	}
-
 	std::vector<Gene *> *genes = chromosome->getGenes();
 	size_t i = 0;
 	
 	for (std::vector<Gene *>::iterator it = genes->begin(); it != genes->end(); it++) {		
-
-		if (!(*mutationEnabled)[i])
-			continue;		
 
 		mutate(*it);
 
@@ -155,12 +144,6 @@ inline void MutationGaussian::setStdDev(double s)
 inline MutationGaussian::MutationGaussian(double m, double sdev)
 {
 	initialize(m, sdev);
-}
-
-inline MutationGaussian::MutationGaussian(double m, double sdev, std::vector<char>* mutEnabled)
-{
-	initialize(m, sdev);
-	mutationEnabled = mutEnabled;
 }
 
 inline MutationGaussian::~MutationGaussian()

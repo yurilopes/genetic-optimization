@@ -42,7 +42,7 @@ int main(){
 	*/
 
 	//MutationUniform mut;
-	MutationGaussian mut(0.0, 0.0005);
+	MutationGaussian mut(0.0, 0.05);
 	
 	ga.setMutationOperator(&mut);
 	ga.enableMutation(true);
@@ -55,7 +55,8 @@ int main(){
 	uint64_t i;
 	for (i = 0; i < 0xFFFFFFFF; i++) {			
 
-		ga.calculateFitness();	
+		ga.calculateFitness();			
+
 
 		if (i % ITERATION_SHOW == 0) {
 			cout << "Iteration " << i << endl;
@@ -72,6 +73,9 @@ int main(){
 		ga.selectionRoulette();	
 		ga.generateRouletteMatingPool();
 		ga.crossOver();
+
+		if (i >= 500)
+			ga.evolutionStrategy(4);
 	}
 
 	clock_t timeEnd = clock(); //Ending time

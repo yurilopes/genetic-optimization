@@ -19,6 +19,8 @@ using namespace std;
 #define ELITE_SIZE			25
 #define CROSSOVER_PROB		1.0f
 #define MUTATION_PROB		0.05f
+#define ES_NOFFSPRING		4
+#define ES_ELITEONLY		false
 
 int main(){	
 
@@ -42,7 +44,7 @@ int main(){
 	*/
 
 	//MutationUniform mut;
-	MutationGaussian mut(0.0, 0.0005);
+	MutationGaussian mut(0.0, 0.0001);
 	
 	ga.setMutationOperator(&mut);
 	ga.enableMutation(true);
@@ -71,8 +73,10 @@ int main(){
 		ga.generateRouletteMatingPool();
 		ga.crossOver();
 
-		if (i >= 100)
-			ga.evolutionStrategy(4, true);
+		ga.evolutionStrategy(ES_NOFFSPRING, ES_ELITEONLY);
+
+		if (i == 400)
+			mut.setStdDev(0.00001);
 	}
 
 	clock_t timeEnd = clock(); //Ending time
@@ -85,7 +89,6 @@ int main(){
 	ga.calculateFitness();
 	ga.printFittestChromosome();
 	cout << endl;
-	//ga.printPopulation();
 
 	
 

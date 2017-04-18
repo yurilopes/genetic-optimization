@@ -11,21 +11,21 @@ using namespace std;
 
 #include "examples.h"
 
-#define ERROR_FITNESS		1e-4f
+#define ERROR_FITNESS		1e-5f
 
-#define OPTIMAL_FITNESS		-1.07654f
+#define OPTIMAL_FITNESS		-99.2396f
 #define POPULATION_SIZE		2000
-#define ITERATION_SHOW		10
+#define ITERATION_SHOW		1
 #define ELITE_SIZE			25
 #define CROSSOVER_PROB		1.0f
 #define MUTATION_PROB		0.05f
-#define ES_NOFFSPRING		4
-#define ES_ELITEONLY		false
+#define ES_NOFFSPRING		5
+#define ES_ELITEONLY		true
 
 int main(){	
 
-	GeneticAlgorithm ga(getGenotype3());
-	ga.setFitnessFunction(fitnessFunction3);
+	GeneticAlgorithm ga(getGenotype4());
+	ga.setFitnessFunction(fitnessFunction4);
 
 	ga.setElitism(true);	
 	ga.setEliteSize(ELITE_SIZE);

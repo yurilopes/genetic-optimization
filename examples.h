@@ -112,10 +112,7 @@ double fitnessFunction5(Chromosome * chromosome) {
 
 vector<Gene*> *getGenotype4() {
 	GeneValue minSeed, maxSeed, minSeed2, maxSeed2;
-	vector<Gene *> *genotype = new vector<Gene *>();
-
-	minSeed.floatValue = 3.514237f;
-	maxSeed.floatValue = 3.514237f;
+	vector<Gene *> *genotype = new vector<Gene *>();	
 
 	minSeed2.uint8Value = 0;
 	maxSeed2.uint8Value = 1;
@@ -127,6 +124,9 @@ vector<Gene*> *getGenotype4() {
 	gene->setBounds(minSeed2, maxSeed2);
 	genotype->push_back(gene);
 
+	minSeed.floatValue = 3.514237f;
+	maxSeed.floatValue = 3.514237f;
+
 	//v1
 	gene = new Gene(FLOAT);
 	gene->setSeedRange(minSeed, maxSeed);
@@ -134,10 +134,30 @@ vector<Gene*> *getGenotype4() {
 	gene->setBounds(minSeed, maxSeed);
 	genotype->push_back(gene);
 
-	minSeed.floatValue = 0.0f;
-	maxSeed.floatValue = 0.0f;
+	minSeed.floatValue = 0;
+	maxSeed.floatValue = 0;
 
 	//v2
+	gene = new Gene(FLOAT);
+	gene->setSeedRange(minSeed, maxSeed);
+	gene->enableBounding(true);
+	gene->setBounds(minSeed, maxSeed);
+	genotype->push_back(gene);
+
+	minSeed.floatValue = 0;
+	maxSeed.floatValue = 20.0f;
+
+	//x1
+	gene = new Gene(FLOAT);
+	gene->setSeedRange(minSeed, maxSeed);
+	gene->enableBounding(true);
+	gene->setBounds(minSeed, maxSeed);
+	genotype->push_back(gene);
+
+	minSeed.floatValue = 0;
+	maxSeed.floatValue = 20.0f;
+
+	//x2
 	gene = new Gene(FLOAT);
 	gene->setSeedRange(minSeed, maxSeed);
 	gene->enableBounding(true);
@@ -153,39 +173,52 @@ double fitnessFunction4(Chromosome * chromosome) {
 	float y = (float)(*chromosome->getGenes())[0]->getValue().uint8Value;
 	float v1 = (*chromosome->getGenes())[1]->getValue().floatValue;
 	float v2 = (*chromosome->getGenes())[2]->getValue().floatValue;
+	float x1 = (*chromosome->getGenes())[3]->getValue().floatValue;
+	float x2 = (*chromosome->getGenes())[4]->getValue().floatValue;
 
 	//We have to check if the float/double values are valid
 	if (isnan(v1) || isinf(v1))
 		return -INFINITY;
 	if (isnan(v2) || isinf(v2))
 		return -INFINITY;
+	if (isnan(x1) || isinf(x1))
+		return -INFINITY;
+	if (isnan(x2) || isinf(x2))
+		return -INFINITY;
 
-	double fitness = -(7.5f*y + 5.5f*(1.0f - y) + 7*v1 + 6*v2 + (50.0f*(1.0f - y) / (0.8f*(1.0f - exp(-0.4f * v2)))) + (50.0f * y / (0.9f*(1.0f - exp(-0.5f * v1)))));
+	float y2 = (1.0f - y);
+	float zs = (0.9f*(1.0f - exp(-0.5f*v1)))*x1 + (0.8f*(1.0f - exp(-0.4f*v2)))*x2;
+
+	double fitness = -(7.5f*y + 5.5f*y2 + 7.0f*v1 + 6.0f*v2 + 5.0f*(x1 + x2) );
 	double punish = 0;
 
 	bool violated = false;
-	float violations[4] = { 0, 0, 0, 0 };
+	float violations[5] = { 0, 0, 0, 0, 0 };
 
-	if ((0.9f*(1.0f - exp(-0.5f * v1))) - 2.0f*y > 0) {
+	if (zs != 10) {
 		violated = true;
-		violations[0] = (0.9f*(1.0f - exp(-0.5f * v1))) - 2.0f*y;
+		violations[0] = 10 - zs;
 	}
-	if ((0.8f*(1.0f - exp(-0.4f * v2))) - 2.0f*(1.0f - y) > 0) {
+	if (v1 > 10*y) {
 		violated = true;
-		violations[1] = (0.8f*(1.0f - exp(-0.4f * v2))) - 2.0f*(1.0f - y);
+		violations[1] = 10*y - v1;
 	}
-	if (v1 > 10.0f*y) {
+	if (v2 > 10 * y2) {
 		violated = true;
-		violations[2] = 10.0f*y - v1;
+		violations[2] = 10.0f*y2 - v2;
 	}
-	if (v2 > 10.0f*(1.0f - y)) {
+	if (x1 > 20.0f*y) {
 		violated = true;
-		violations[2] = 10.0f*(1.0f - y) - v2;
+		violations[3] = 20.0f*y - x1;
+	}
+	if (x2 > 20.0f*2) {
+		violated = true;
+		violations[4] = 20.0f*y2 - x2;
 	}
 
 	if (violated) {
 		punish = 0;
-		for (int i = 0; i <4; i++)
+		for (int i = 0; i <5; i++)
 			punish += abs(violations[i]);
 		punish *= PUNISHMENT_FACTOR;
 	}

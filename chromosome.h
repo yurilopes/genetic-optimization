@@ -7,7 +7,7 @@
 #include "gene.h"
 
 #define MAXFLOATPRINT 999.f
-#define MINFLOATPRINT -99.f
+#define MINFLOATPRINT -999.f
 
 extern mt19937 genGA;
 
@@ -44,7 +44,8 @@ class Chromosome{
 		void								print();
 		bool								equals(Chromosome * ind);
 
-        static bool							compare(Chromosome *ind0, Chromosome *ind1);
+        static bool							compareMaximize(Chromosome *ind0, Chromosome *ind1);
+		static bool							compareMinimize(Chromosome *ind0, Chromosome *ind1);
 };
 
 
@@ -233,10 +234,16 @@ inline double Chromosome::addToAccFitness(double value)
 	return accFitness+=value;
 }
 
-bool Chromosome::compare(Chromosome *ind0, Chromosome *ind1){
+bool Chromosome::compareMaximize(Chromosome *ind0, Chromosome *ind1){
     /*
-    Maximization of the fitness function is implied here
+    Maximization/minimization of the fitness function is implied here
     */
     return ind0->getFitness() > ind1->getFitness();
 }
 
+bool Chromosome::compareMinimize(Chromosome *ind0, Chromosome *ind1) {
+	/*
+	Maximization/minimization of the fitness function is implied here
+	*/
+	return ind0->getFitness() < ind1->getFitness();
+}

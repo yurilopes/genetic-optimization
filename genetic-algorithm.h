@@ -48,6 +48,8 @@ public:
 	Mutation			*getMutationOperator();
 	void				setCrossoverOperator(Crossover *cross);
 	Crossover			*getCrossoverOperator();
+	OptimizationMode	getOptimizationMode();
+	void				setOptimizationMode(OptimizationMode mode);
 
 
 	//General operations
@@ -76,6 +78,8 @@ protected:
 	bool				mutationEnabled = false;
 	float				mutationProbability = 0.01f;
 	float				crossoverProbability = 1.0f;
+	OptimizationMode	optimizationMode = MODE_MAXIMIZE;
+	
 
 	static Chromosome * getFirstChromosomeMatingRoulette(Population * pop, double probability);
 	static Chromosome * getSecondChromosomeMatingRoulette(Population * pop, Chromosome * ind0, double probability);
@@ -340,7 +344,7 @@ inline void GeneticAlgorithm::initializePopulation(uint32_t populationSize)
 inline void GeneticAlgorithm::calculateFitness()
 {
 	if (gPopulation != NULL)
-		gPopulation->calculateFitness();
+		gPopulation->calculateFitness(optimizationMode);
 
 	if (getPopulationSize() > populationSurvivalSize) { //Population size is greater than the survival threshold
 		//Remove the worst chromosomes, end their lives
@@ -458,6 +462,16 @@ inline void GeneticAlgorithm::setCrossoverOperator(Crossover * cross)
 inline Crossover * GeneticAlgorithm::getCrossoverOperator()
 {
 	return crossoverOperator;
+}
+
+inline OptimizationMode GeneticAlgorithm::getOptimizationMode()
+{
+	return optimizationMode;
+}
+
+inline void GeneticAlgorithm::setOptimizationMode(OptimizationMode mode)
+{
+	optimizationMode = mode;
 }
 
 inline Chromosome * GeneticAlgorithm::getFirstChromosomeMatingRoulette(Population * pop, double probability)

@@ -11,6 +11,11 @@
 #include "chromosome.h"
 #include "utils.h"
 
+enum OptimizationMode {
+	MODE_MAXIMIZE,
+	MODE_MINIMIZE
+};
+
 class Population{
     protected:
         vector<Chromosome*>					chromosomes;                        
@@ -21,7 +26,7 @@ class Population{
         Population(vector<Gene *> *genModel);
         ~Population();
         void								printPopulation();
-        void								calculateFitness();		
+        void								calculateFitness(OptimizationMode mode);		
         void								initialize(uint32_t populationSize, FitnessFunction fitFunction);
 		vector<Chromosome*>					*getChromosomes();
 		Chromosome							*getEqualChromosome(Chromosome * ind);
@@ -101,7 +106,7 @@ void Population::printPopulation(){
 }
 
 
-void Population::calculateFitness(){	
+void Population::calculateFitness(OptimizationMode mode){
 	/*
 	Calculate fitness values for each chromosome
 	*/
@@ -110,5 +115,8 @@ void Population::calculateFitness(){
         chm->calculateFitness();
     }
 
-    sort(chromosomes.begin(), chromosomes.end(), Chromosome::compare);
+	if(mode == MODE_MAXIMIZE)
+		sort(chromosomes.begin(), chromosomes.end(), Chromosome::compareMaximize);
+	else
+		sort(chromosomes.begin(), chromosomes.end(), Chromosome::compareMinimize);
 }

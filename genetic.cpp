@@ -13,20 +13,21 @@ using namespace std;
 
 #define ERROR_FITNESS		1e-5f
 
+#define	OPT_MODE			MODE_MAXIMIZE
 #define OPTIMAL_FITNESS		-99.2396f
 #define POPULATION_SIZE		2000
 #define ITERATION_SHOW		1
 #define ELITE_SIZE			25
 #define CROSSOVER_PROB		1.0f
 #define MUTATION_PROB		0.05f
-#define ES_NOFFSPRING		5
+#define ES_NOFFSPRING		24
 #define ES_ELITEONLY		true
 
 int main(){	
 
 	GeneticAlgorithm ga(getGenotype4());
 	ga.setFitnessFunction(fitnessFunction4);
-
+	ga.setOptimizationMode(OPT_MODE);
 	ga.setElitism(true);	
 	ga.setEliteSize(ELITE_SIZE);
 	
@@ -44,7 +45,7 @@ int main(){
 	*/
 
 	//MutationUniform mut;
-	MutationGaussian mut(0.0, 0.0001);
+	MutationGaussian mut(0.0, 0.001);
 	
 	ga.setMutationOperator(&mut);
 	ga.enableMutation(true);
@@ -75,8 +76,8 @@ int main(){
 
 		ga.evolutionStrategy(ES_NOFFSPRING, ES_ELITEONLY);
 
-		if (i == 400)
-			mut.setStdDev(0.00001);
+		if (i == 1000)
+			mut.setStdDev(0.0001);		
 	}
 
 	clock_t timeEnd = clock(); //Ending time

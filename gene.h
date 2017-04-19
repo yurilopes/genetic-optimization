@@ -88,6 +88,9 @@ inline Gene::Gene(Gene *original)
 	minSeed = original->getMinimumSeed();
 	maxSeed = original->getMaximumSeed();
 	value = original->getValue();
+	boundingEnabled = original->isBoundingEnabled();
+	upperBound = original->getUpperBound();
+	lowerBound = original->getLowerBound();
 }
 
 inline GeneValue Gene::getValue()

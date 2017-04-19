@@ -124,8 +124,8 @@ vector<Gene*> *getGenotype4() {
 	gene->setBounds(minSeed2, maxSeed2);
 	genotype->push_back(gene);
 
-	minSeed.floatValue = 3.514237f;
-	maxSeed.floatValue = 3.514237f;
+	minSeed.floatValue = 0;
+	maxSeed.floatValue = 10.0f; //3.514237f;
 
 	//v1
 	gene = new Gene(FLOAT);
@@ -135,7 +135,7 @@ vector<Gene*> *getGenotype4() {
 	genotype->push_back(gene);
 
 	minSeed.floatValue = 0;
-	maxSeed.floatValue = 0;
+	maxSeed.floatValue = 10.0f;
 
 	//v2
 	gene = new Gene(FLOAT);
@@ -168,6 +168,8 @@ vector<Gene*> *getGenotype4() {
 }
 
 double fitnessFunction4(Chromosome * chromosome) {
+	//MODE_MAXIMIZATION
+
 	//http://www.zweigmedia.com/RealWorld/simplex.html
 	
 	float y = (float)(*chromosome->getGenes())[0]->getValue().uint8Value;
@@ -178,19 +180,19 @@ double fitnessFunction4(Chromosome * chromosome) {
 
 	//We have to check if the float/double values are valid
 	if (isnan(v1) || isinf(v1))
-		return -INFINITY;
+		return INFINITY;
 	if (isnan(v2) || isinf(v2))
-		return -INFINITY;
+		return INFINITY;
 	if (isnan(x1) || isinf(x1))
-		return -INFINITY;
+		return INFINITY;
 	if (isnan(x2) || isinf(x2))
-		return -INFINITY;
+		return INFINITY;
 
 	float y2 = (1.0f - y);
 	float zs = (0.9f*(1.0f - exp(-0.5f*v1)))*x1 + (0.8f*(1.0f - exp(-0.4f*v2)))*x2;
 
 	double fitness = -(7.5f*y + 5.5f*y2 + 7.0f*v1 + 6.0f*v2 + 5.0f*(x1 + x2) );
-	double punish = 0;
+	double punish = 0;	
 
 	bool violated = false;
 	float violations[5] = { 0, 0, 0, 0, 0 };
@@ -205,13 +207,13 @@ double fitnessFunction4(Chromosome * chromosome) {
 	}
 	if (v2 > 10 * y2) {
 		violated = true;
-		violations[2] = 10.0f*y2 - v2;
+		violations[2] = 10.0f*y2 - v2;		
 	}
 	if (x1 > 20.0f*y) {
 		violated = true;
-		violations[3] = 20.0f*y - x1;
+		violations[3] = 20.0f*y - x1;	
 	}
-	if (x2 > 20.0f*2) {
+	if (x2 > 20.0f*y2) {
 		violated = true;
 		violations[4] = 20.0f*y2 - x2;
 	}
@@ -227,6 +229,7 @@ double fitnessFunction4(Chromosome * chromosome) {
 }
 
 vector<Gene*> *getGenotype3() {
+	//MODE_MAXIMIZATION
 	GeneValue minSeed, maxSeed, minSeed2, maxSeed2, minSeed3, maxSeed3;
 	vector<Gene *> *genotype = new vector<Gene *>();
 
@@ -262,7 +265,7 @@ vector<Gene*> *getGenotype3() {
 
 
 double fitnessFunction3(Chromosome * chromosome) {
-	//http://www.zweigmedia.com/RealWorld/simplex.html
+	//MODE_MAXIMIZATION	
 
 	float x1 = (*chromosome->getGenes())[0]->getValue().floatValue;	
 	float x2 = (*chromosome->getGenes())[1]->getValue().floatValue;
@@ -304,6 +307,7 @@ double fitnessFunction3(Chromosome * chromosome) {
 }
 
 vector<Gene*> *getGenotype2() {
+	//MODE_MAXIMIZATION
 	GeneValue minSeed, maxSeed, minSeed2, maxSeed2;
 	vector<Gene *> *genotype = new vector<Gene *>();
 
@@ -327,7 +331,7 @@ vector<Gene*> *getGenotype2() {
 }
 
 double fitnessFunction2(Chromosome * chromosome) {
-	//http://www.zweigmedia.com/RealWorld/simplex.html
+	//MODE_MAXIMIZATION	
 
 	float x1 = (*chromosome->getGenes())[0]->getValue().floatValue;	
 	uint8_t y = (*chromosome->getGenes())[1]->getValue().uint8Value;
@@ -401,7 +405,7 @@ vector<Gene*> *getGenotype2d() {
 
 
 double fitnessFunction2d(Chromosome * chromosome) {
-	//http://www.zweigmedia.com/RealWorld/simplex.html
+	//MODE_MAXIMIZATION
 
 	float x1 = (*chromosome->getGenes())[0]->getValue().floatValue;
 	float x2 = (*chromosome->getGenes())[1]->getValue().floatValue;
@@ -452,7 +456,7 @@ double fitnessFunction2d(Chromosome * chromosome) {
 	return fitness + punish;
 }
 
-vector<Gene*> *getGenotype1() {
+vector<Gene*> *getGenotype1() {	
 	GeneValue minSeed, maxSeed, minSeed2, maxSeed2;
 	vector<Gene *> *genotype = new vector<Gene *>();
 
@@ -477,7 +481,7 @@ vector<Gene*> *getGenotype1() {
 
 
 double fitnessFunction1(Chromosome * chromosome) {
-	//http://www.zweigmedia.com/RealWorld/simplex.html
+	//MODE_MAXIMIZATION
 
 	float x = (*chromosome->getGenes())[0]->getValue().floatValue;
 	uint8_t y = (*chromosome->getGenes())[1]->getValue().uint8Value;

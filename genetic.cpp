@@ -16,11 +16,11 @@ using namespace std;
 #define	OPT_MODE			MODE_MAXIMIZE
 #define OPTIMAL_FITNESS		-99.2396f
 #define POPULATION_SIZE		2000
-#define ITERATION_SHOW		1
+#define ITERATION_SHOW		100
 #define ELITE_SIZE			25
 #define CROSSOVER_PROB		1.0f
 #define MUTATION_PROB		0.05f
-#define ES_NOFFSPRING		24
+#define ES_NOFFSPRING		120
 #define ES_ELITEONLY		true
 
 int main(){	
@@ -45,9 +45,18 @@ int main(){
 	*/
 
 	//MutationUniform mut;
-	MutationGaussian mut(0.0, 0.001);
+	MutationGaussian mutG(0.0, 0.01);
+	MutationUniform mutU;
+	vector<MutationVectorized *> mutvec;
+	mutvec.push_back(&mutU);
+	mutvec.push_back(&mutG);
+	mutvec.push_back(&mutG);
+	mutvec.push_back(&mutG);
+	mutvec.push_back(&mutG);
+	MutationVector mut(mutvec);
 	
-	ga.setMutationOperator(&mut);
+
+	ga.setMutationOperator(&mutU);
 	ga.enableMutation(true);
 	ga.setMutationProbability(MUTATION_PROB);	
 
@@ -77,7 +86,11 @@ int main(){
 		ga.evolutionStrategy(ES_NOFFSPRING, ES_ELITEONLY);
 
 		if (i == 1000)
-			mut.setStdDev(0.0001);		
+			mutG.setStdDev(0.001);		
+		if (i == 2000)
+			mutG.setStdDev(0.0001);
+		if (i == 2600)
+			mutG.setStdDev(0.00001);
 	}
 
 	clock_t timeEnd = clock(); //Ending time

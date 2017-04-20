@@ -20,7 +20,7 @@ using namespace std;
 #define ELITE_SIZE			25
 #define CROSSOVER_PROB		1.0f
 #define MUTATION_PROB		0.05f
-#define ES_NOFFSPRING		10
+#define ES_NOFFSPRING		20
 #define ES_ELITEONLY		true
 
 int main(){	

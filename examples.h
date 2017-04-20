@@ -8,8 +8,8 @@ vector<Gene*> *getGenotype5() {
 	GeneValue minSeed, maxSeed, minSeed2, maxSeed2;
 	vector<Gene *> *genotype = new vector<Gene *>();
 
-	minSeed.floatValue = 0.0f;
-	maxSeed.floatValue = 5.0f;
+	minSeed.doubleValue = 0.0f;
+	maxSeed.doubleValue = 5.0f;
 
 	minSeed2.uint8Value = 0;
 	maxSeed2.uint8Value = 1;
@@ -18,7 +18,7 @@ vector<Gene*> *getGenotype5() {
 
 	//x1..x3
 	for (int i = 0; i < 3; i++) {
-		gene = new Gene(FLOAT);
+		gene = new Gene(DOUBLE);
 		gene->setSeedRange(minSeed, maxSeed);
 		gene->enableBounding(true);
 		gene->setBounds(minSeed, maxSeed);
@@ -41,13 +41,13 @@ vector<Gene*> *getGenotype5() {
 double fitnessFunction5(Chromosome * chromosome) {
 	//http://www.zweigmedia.com/RealWorld/simplex.html
 
-	float x1 = (*chromosome->getGenes())[0]->getValue().floatValue;
-	float x2 = (*chromosome->getGenes())[1]->getValue().floatValue;
-	float x3 = (*chromosome->getGenes())[2]->getValue().floatValue;
-	float y1 = (float)(*chromosome->getGenes())[3]->getValue().uint8Value;
-	float y2 = (float)(*chromosome->getGenes())[4]->getValue().uint8Value;
-	float y3 = (float)(*chromosome->getGenes())[5]->getValue().uint8Value;
-	float y4 = (float)(*chromosome->getGenes())[6]->getValue().uint8Value;
+	double x1 = (*chromosome->getGenes())[0]->getValue().doubleValue;
+	double x2 = (*chromosome->getGenes())[1]->getValue().doubleValue;
+	double x3 = (*chromosome->getGenes())[2]->getValue().doubleValue;
+	double y1 = (double)(*chromosome->getGenes())[3]->getValue().uint8Value;
+	double y2 = (double)(*chromosome->getGenes())[4]->getValue().uint8Value;
+	double y3 = (double)(*chromosome->getGenes())[5]->getValue().uint8Value;
+	double y4 = (double)(*chromosome->getGenes())[6]->getValue().uint8Value;
 
 	//We have to check if the float/double values are valid
 	if (isnan(x1) || isinf(x1))
@@ -57,47 +57,47 @@ double fitnessFunction5(Chromosome * chromosome) {
 	if (isnan(x3) || isinf(x3))
 		return -INFINITY;
 
-	double fitness = -(pow((y1 - 1.0f), 2.0f) + pow((y2 - 1.0f), 2.0f) + pow((y3 - 1.0f), 2.0f) - log(y4 + 1.0f) + pow((x1 - 1.0f), 2.0f) + pow((x2 - 1.0f), 2.0f) + pow((x3 - 1.0f), 2.0f));
+	double fitness = -(pow((y1 - 1.0), 2.0) + pow((y2 - 2.0), 2.0) + pow((y3 - 1.0), 2.0) - log(y4 + 1.0) + pow((x1 - 1.0), 2.0) + pow((x2 - 2.0), 2.0) + pow((x3 - 3.0), 2.0));
 	double punish = 0;
 
 	bool violated = false;
-	float violations[9] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	double violations[9] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-	if (y1 + y2 + y3 + x1 + x2 + x3 > 5.0f) {
+	if (y1 + y2 + y3 + x1 + x2 + x3 > 5.0) {
 		violated = true;
-		violations[0] = 5.0f - (y1 + y2 + y3 + x1 + x2 + x3);
+		violations[0] = 5.0 - (y1 + y2 + y3 + x1 + x2 + x3);
 	}
-	if (pow(y3, 2.0f) + pow(x1, 2.0f) + pow(x2, 2.0f) + pow(x3, 2.0f) > 5.5f) {
+	if (pow(y3, 2.0) + pow(x1, 2.0) + pow(x2, 2.0) + pow(x3, 2.0) > 5.5) {
 		violated = true;
-		violations[1] = 5.5f - (pow(y3, 2.0f) + pow(x1, 2.0f) + pow(x2, 2.0f) + pow(x3, 2.0f));
+		violations[1] = 5.5 - (pow(y3, 2.0) + pow(x1, 2.0) + pow(x2, 2.0) + pow(x3, 2.0));
 	}
-	if (y1 + x1 > 1.2f) {
+	if (y1 + x1 > 1.2) {
 		violated = true;
-		violations[2] = 1.2f - (y1 + x1);
+		violations[2] = 1.2 - (y1 + x1);
 	}
-	if (y2 + x2 > 1.8f) {
+	if (y2 + x2 > 1.8) {
 		violated = true;
-		violations[3] = 1.8f - (y2 + x2);
+		violations[3] = 1.8 - (y2 + x2);
 	}
-	if (y3 + x3 > 2.5f) {
+	if (y3 + x3 > 2.5) {
 		violated = true;
-		violations[4] = 2.5f - (y3 + x3);
+		violations[4] = 2.5 - (y3 + x3);
 	}
-	if (y4 + x1 > 1.2f) {
+	if (y4 + x1 > 1.2) {
 		violated = true;
-		violations[5] = 1.2f - (y4 + x1);
+		violations[5] = 1.2 - (y4 + x1);
 	}
-	if (pow(y2, 2.0f) + pow(x2, 2.0f) > 1.64f) {
+	if (pow(y2, 2.0) + pow(x2, 2.0) > 1.64) {
 		violated = true;
-		violations[6] = 1.64f - (pow(y2, 2.0f) + pow(x2, 2.0f));
+		violations[6] = 1.64 - (pow(y2, 2.0) + pow(x2, 2.0));
 	}
-	if (pow(y3, 2.0f) + pow(x3, 2.0f) > 4.25f) {
+	if (pow(y3, 2.0) + pow(x3, 2.0) > 4.25) {
 		violated = true;
-		violations[7] = 4.25f - (pow(y3, 2.0f) + pow(x3, 2.0f));
+		violations[7] = 4.25 - (pow(y3, 2.0) + pow(x3, 2.0));
 	}
-	if (pow(y2, 2.0f) + pow(x3, 2.0f) > 4.64f) {
+	if (pow(y2, 2.0) + pow(x3, 2.0) > 4.64) {
 		violated = true;
-		violations[8] = 4.64f - (pow(y2, 2.0f) + pow(x3, 2.0f));
+		violations[8] = 4.64 - (pow(y2, 2.0) + pow(x3, 2.0));
 	}
 
 	if (violated) {

@@ -25,8 +25,8 @@ inline void MutationVector::mutate(Chromosome *chromosome) {
 	for (std::vector<Gene *>::iterator it = genes->begin(); it != genes->end(); it++) {
 		if (i >= mutationVector->size())
 			return;
-
-		(*mutationVector)[i]->mutate(*it);				
+		if((*mutationVector)[i]) //Ignore null pointers
+			(*mutationVector)[i]->mutate(*it);				
 
 		i++;
 	}

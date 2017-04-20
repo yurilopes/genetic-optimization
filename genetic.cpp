@@ -11,22 +11,22 @@ using namespace std;
 
 #include "examples.h"
 
-#define ERROR_FITNESS		1e-5f
+#define ERROR_FITNESS		1e-4f
 
 #define	OPT_MODE			MODE_MAXIMIZE
-#define OPTIMAL_FITNESS		-99.2396f
+#define OPTIMAL_FITNESS		-4.579582f
 #define POPULATION_SIZE		2000
 #define ITERATION_SHOW		100
 #define ELITE_SIZE			25
 #define CROSSOVER_PROB		1.0f
 #define MUTATION_PROB		0.05f
-#define ES_NOFFSPRING		120
+#define ES_NOFFSPRING		100
 #define ES_ELITEONLY		true
 
 int main(){	
 
-	GeneticAlgorithm ga(getGenotype4());
-	ga.setFitnessFunction(fitnessFunction4);
+	GeneticAlgorithm ga(getGenotype5());
+	ga.setFitnessFunction(fitnessFunction5);
 	ga.setOptimizationMode(OPT_MODE);
 	ga.setElitism(true);	
 	ga.setEliteSize(ELITE_SIZE);
@@ -47,9 +47,7 @@ int main(){
 	//MutationUniform mut;
 	MutationGaussian mutG(0.0, 0.01);
 	MutationUniform mutU;
-	vector<MutationVectorized *> mutvec;
-	mutvec.push_back(&mutU);
-	mutvec.push_back(&mutG);
+	vector<MutationVectorized *> mutvec;	
 	mutvec.push_back(&mutG);
 	mutvec.push_back(&mutG);
 	mutvec.push_back(&mutG);
@@ -65,6 +63,7 @@ int main(){
 	clock_t timeBegin = clock(); //Starting time
 
 	uint64_t i;
+	bool eliteOnly = ES_ELITEONLY;
 	for (i = 0; i < 0xFFFFFFFF; i++) {			
 
 		ga.calculateFitness();			
@@ -79,18 +78,25 @@ int main(){
 		if (abs(ga.getFittestChromosome()->getFitness() - OPTIMAL_FITNESS) <= ERROR_FITNESS)
 			break;
 
-		ga.selectionRoulette();	
-		ga.generateRouletteMatingPool();
-		ga.crossOver();
+		if (i < 2000) {
+			ga.selectionRoulette();
+			ga.generateRouletteMatingPool();
+			ga.crossOver();
+		}
 
-		ga.evolutionStrategy(ES_NOFFSPRING, ES_ELITEONLY);
+		ga.evolutionStrategy(ES_NOFFSPRING, eliteOnly);
 
-		if (i == 1000)
-			mutG.setStdDev(0.001);		
-		if (i == 2000)
-			mutG.setStdDev(0.0001);
-		if (i == 2600)
+		if (i == 500)
+			mutG.setStdDev(0.0001);		
+		if (i == 1300) 
 			mutG.setStdDev(0.00001);
+		if (i == 2000) {
+			mutG.setStdDev(0.000001);
+			eliteOnly = false;
+		}
+		if (i == 4000) 
+			mutG.setStdDev(0.0000001);					
+		
 	}
 
 	clock_t timeEnd = clock(); //Ending time

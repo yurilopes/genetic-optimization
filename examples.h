@@ -4,6 +4,96 @@
 
 #include "genetic-algorithm.h"
 
+vector<Gene*> *getGenotype6() {
+	GeneValue minSeed, maxSeed, minSeed2, maxSeed2;
+	vector<Gene *> *genotype = new vector<Gene *>();
+
+	minSeed.doubleValue = 27.0f;
+	maxSeed.doubleValue = 45.0f;
+
+	Gene * gene;
+
+	//x1..x3
+	for (int i = 0; i < 3; i++) {
+		gene = new Gene(DOUBLE);
+		gene->setSeedRange(minSeed, maxSeed);
+		gene->enableBounding(true);
+		gene->setBounds(minSeed, maxSeed);
+		genotype->push_back(gene);
+	}
+
+	//y1	
+	minSeed2.uint8Value = 78;
+	maxSeed2.uint8Value = 102;
+	gene = new Gene(UINT8);
+	gene->setSeedRange(minSeed2, maxSeed2);
+	gene->enableBounding(true);
+	gene->setBounds(minSeed2, maxSeed2);
+	genotype->push_back(gene);
+
+	//y2
+	minSeed2.uint8Value = 33;
+	maxSeed2.uint8Value = 45;
+	gene = new Gene(UINT8);
+	gene->setSeedRange(minSeed2, maxSeed2);
+	gene->enableBounding(true);
+	gene->setBounds(minSeed2, maxSeed2);
+	genotype->push_back(gene);
+
+	return genotype;
+}
+
+double fitnessFunction6(Chromosome * chromosome) {
+	//http://www.zweigmedia.com/RealWorld/simplex.html
+
+	double x1 = (double)(*chromosome->getGenes())[0]->getValue().floatValue;
+	double x2 = (double)(*chromosome->getGenes())[1]->getValue().floatValue;
+	double x3 = (double)(*chromosome->getGenes())[2]->getValue().floatValue;
+	double y1 = (double)(*chromosome->getGenes())[3]->getValue().uint8Value;
+	double y2 = (double)(*chromosome->getGenes())[4]->getValue().uint8Value;
+
+	//We have to check if the float/double values are valid
+	if (isnan(x1) || isinf(x1))
+		return -INFINITY;
+	if (isnan(x2) || isinf(x2))
+		return -INFINITY;
+	if (isnan(x3) || isinf(x3))
+		return -INFINITY;
+
+	double fitness = -5.357854*pow(x1, 2.0) - 0.835689*y1*x3 - 37.29329*y1 + 40792.141;
+	double punish = 0;
+
+	bool violated = false;
+	double violations[9] = { 0, 0, 0 };
+
+	double s1 = 85.334407 + 0.0056858*y2*x3 + 0.0006262*y1*x2 - 0.0022053*x1*x3;
+	double s2 = 80.51249 + 0.0071317*y2*x3 + 0.0029955*y1*y2 + 0.0021813*pow(x1, 2.0) - 90.0;
+	double s3 = 9.300961 + 0.0047026*x1*x3 + 0.0012547*y1*x1 + 0.0019085*x1*x2 - 20.0;
+
+	if (s1 > 92.0) {
+		violated = true;
+		violations[0] = 92.0 - s1;
+	}
+	if (s2 > 20.0) {
+		violated = true;
+		violations[1] = 20.0 - s2;
+	}
+	if (s3 > 5.0) {
+		violated = true;
+		violations[2] = 5.0 - s3;
+	}
+
+	if (violated) {
+		punish = 0;
+		for (int i = 0; i <3; i++)
+			punish += abs(violations[i]);
+		punish *= PUNISHMENT_FACTOR;
+	}
+
+	return fitness + punish;
+}
+
+
 vector<Gene*> *getGenotype5() {
 	GeneValue minSeed, maxSeed, minSeed2, maxSeed2;
 	vector<Gene *> *genotype = new vector<Gene *>();

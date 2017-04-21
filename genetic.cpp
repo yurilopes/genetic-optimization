@@ -25,8 +25,8 @@ using namespace std;
 
 int main(){	
 
-	GeneticAlgorithm ga(getGenotype5());
-	ga.setFitnessFunction(fitnessFunction5);
+	GeneticAlgorithm ga(getGenotype6());
+	ga.setFitnessFunction(fitnessFunction6);
 	ga.setOptimizationMode(OPT_MODE);
 	ga.setElitism(true);	
 	ga.setEliteSize(ELITE_SIZE);
@@ -51,6 +51,8 @@ int main(){
 	mutvec.push_back(&mutG);
 	mutvec.push_back(&mutG);
 	mutvec.push_back(&mutG);
+	mutvec.push_back(&mutU);
+	mutvec.push_back(&mutU);
 	MutationVector mut(mutvec);
 	
 

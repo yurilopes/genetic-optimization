@@ -4,6 +4,7 @@
 #include <inttypes.h>
 #include <ctime>
 #include <random>
+#include <stdio.h>
 #include "gene.h"
 
 #define MAXFLOATPRINT 999.f
@@ -153,26 +154,26 @@ inline void Chromosome::print()
 		Gene * gen = *it;
 		switch (gen->getDataType()) {
 			case INT8:	
-				printf("%6" PRIi8 , gen->getValue().int8Value);
+				printf("%6hhi", gen->getValue().int8Value);
 				break;
 			case UINT8:
-				printf("%6" PRIu8, gen->getValue().uint8Value);
+				printf("%6hhu", gen->getValue().uint8Value);
 				break;
 			case INT16:
-				printf("%6" PRIi16, gen->getValue().int16Value);
+				printf("%6hi", gen->getValue().int16Value);
 				break;
 			case UINT16:
-				printf("%6" PRIu16, gen->getValue().uint16Value);
+				printf("%6hu", gen->getValue().uint16Value);
 				break;
 			case INT32:
-				printf("%6" PRIi32, gen->getValue().int32Value);
+				printf("%6i", gen->getValue().int32Value);
 			case UINT32:
-				printf("%6" PRIu32, gen->getValue().uint32Value);
+				printf("%6u", gen->getValue().uint32Value);
 				break;
 			case INT64:
-				printf("%6" PRIi64, gen->getValue().int64Value);
+				printf("%6lli", gen->getValue().int64Value);
 			case UINT64:
-				printf("%6" PRIu64, gen->getValue().uint64Value);
+				printf("%6llu", gen->getValue().uint64Value);
 				break;
 			case FLOAT:
 				if (gen->getValue().floatValue >= MINFLOATPRINT && gen->getValue().floatValue <= MAXFLOATPRINT)

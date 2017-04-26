@@ -8,14 +8,14 @@ vector<Gene*> *getGenotype6() {
 	GeneValue minSeed, maxSeed, minSeed2, maxSeed2;
 	vector<Gene *> *genotype = new vector<Gene *>();
 
-	minSeed.doubleValue = 27.0f;
-	maxSeed.doubleValue = 45.0f;
+	minSeed.floatValue = 27.0f;
+	maxSeed.floatValue = 45.0f;
 
 	Gene * gene;
 
 	//x1..x3
 	for (int i = 0; i < 3; i++) {
-		gene = new Gene(DOUBLE);
+		gene = new Gene(FLOAT);
 		gene->setSeedRange(minSeed, maxSeed);
 		gene->enableBounding(true);
 		gene->setBounds(minSeed, maxSeed);
@@ -60,11 +60,11 @@ double fitnessFunction6(Chromosome * chromosome) {
 	if (isnan(x3) || isinf(x3))
 		return -INFINITY;
 
-	double fitness = -5.357854*pow(x1, 2.0) - 0.835689*y1*x3 - 37.29329*y1 + 40792.141;
+	double fitness = -5.357854*x1*x1 - 0.835689*y1*x3 - 37.29329*y1 + 40792.141;
 	double punish = 0;
 
 	bool violated = false;
-	double violations[9] = { 0, 0, 0 };
+	double violations[3] = { 0, 0, 0 };
 
 	double s1 = 85.334407 + 0.0056858*y2*x3 + 0.0006262*y1*x2 - 0.0022053*x1*x3;
 	double s2 = 80.51249 + 0.0071317*y2*x3 + 0.0029955*y1*y2 + 0.0021813*pow(x1, 2.0) - 90.0;
@@ -72,15 +72,15 @@ double fitnessFunction6(Chromosome * chromosome) {
 
 	if (s1 > 92.0) {
 		violated = true;
-		violations[0] = 92.0 - s1;
+		violations[0] = 92.0 - s1;		
 	}
 	if (s2 > 20.0) {
 		violated = true;
-		violations[1] = 20.0 - s2;
+		violations[1] = 20.0 - s2;		
 	}
 	if (s3 > 5.0) {
 		violated = true;
-		violations[2] = 5.0 - s3;
+		violations[2] = 5.0 - s3;		
 	}
 
 	if (violated) {

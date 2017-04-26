@@ -7,8 +7,8 @@
 #include <stdio.h>
 #include "gene.h"
 
-#define MAXFLOATPRINT 999.f
-#define MINFLOATPRINT -999.f
+#define MAXFLOATPRINT 99999.f
+#define MINFLOATPRINT -9999.f
 
 extern mt19937 genGA;
 

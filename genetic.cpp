@@ -15,18 +15,18 @@ using namespace std;
 
 #define	OPT_MODE			MODE_MAXIMIZE
 #define OPTIMAL_FITNESS		-4.579582
-#define POPULATION_SIZE		2000
-#define ITERATION_SHOW		100
+#define POPULATION_SIZE		4000
+#define ITERATION_SHOW		10
 #define ELITE_SIZE			25
 #define CROSSOVER_PROB		1.0f
-#define MUTATION_PROB		0.05f
-#define ES_NOFFSPRING		20
-#define ES_ELITEONLY		true
+#define MUTATION_PROB		0.1f
+#define ES_NOFFSPRING		50
+#define ES_ELITEONLY		false
 
 int main(){	
 
-	GeneticAlgorithm ga(getGenotype6());
-	ga.setFitnessFunction(fitnessFunction6);
+	GeneticAlgorithm ga(getGenotype7());
+	ga.setFitnessFunction(fitnessFunction7);
 	ga.setOptimizationMode(OPT_MODE);
 	ga.setElitism(true);	
 	ga.setEliteSize(ELITE_SIZE);
@@ -48,11 +48,15 @@ int main(){
 	MutationGaussian mutG(0.0, 0.01);
 	MutationUniform mutU;
 	vector<MutationVectorized *> mutvec;	
+	mutvec.push_back(NULL); //N
+	mutvec.push_back(NULL);
+	mutvec.push_back(NULL);
+	mutvec.push_back(&mutG); //V
 	mutvec.push_back(&mutG);
 	mutvec.push_back(&mutG);
+	mutvec.push_back(&mutG); //B
 	mutvec.push_back(&mutG);
-	mutvec.push_back(&mutU);
-	mutvec.push_back(&mutU);
+	mutvec.push_back(&mutG); //TL
 	MutationVector mut(mutvec);
 	
 
@@ -67,7 +71,7 @@ int main(){
 	uint64_t i;
 	bool eliteOnly = ES_ELITEONLY;
 	for (i = 0; i < 0xFFFFFFFF; i++) {			
-
+		its = i;
 		ga.calculateFitness();			
 
 
@@ -80,24 +84,24 @@ int main(){
 		if (abs(ga.getFittestChromosome()->getFitness() - OPTIMAL_FITNESS) <= ERROR_FITNESS)
 			break;
 
-		if (i < 2000) {
+		if (i < 200000) { //Stop crossover and let ES guide the population
 			ga.selectionRoulette();
 			ga.generateRouletteMatingPool();
+			ga.setMutationOperator(&mutU);
 			ga.crossOver();
 		}
 
-		ga.evolutionStrategy(ES_NOFFSPRING, eliteOnly);
+		ga.setMutationOperator(&mut);
+		ga.evolutionStrategy(ES_NOFFSPRING, eliteOnly);		
 
-		if (i == 500)
+		if (i == 3000)
 			mutG.setStdDev(0.0001);		
-		if (i == 1300) 
+		if (i == 6000) 
 			mutG.setStdDev(0.00001);
-		if (i == 2000) {
+		if (i == 12000) {
 			mutG.setStdDev(0.000001);
 			eliteOnly = false;
-		}
-		if (i == 4000) 
-			mutG.setStdDev(0.0000001);					
+		}				
 		
 	}
 

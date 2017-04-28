@@ -11,10 +11,10 @@ using namespace std;
 
 #include "examples.h"
 
-#define ERROR_FITNESS		1e-4
+#define ERROR_FITNESS		1e-5
 
 #define	OPT_MODE			MODE_MAXIMIZE
-#define OPTIMAL_FITNESS		-4.579582
+#define OPTIMAL_FITNESS		-38499.46512
 #define POPULATION_SIZE		4000
 #define ITERATION_SHOW		10
 #define ELITE_SIZE			25
@@ -57,6 +57,7 @@ int main(){
 	mutvec.push_back(&mutG); //B
 	mutvec.push_back(&mutG);
 	mutvec.push_back(&mutG); //TL
+	mutvec.push_back(&mutG);
 	MutationVector mut(mutvec);
 	
 
@@ -71,7 +72,7 @@ int main(){
 	uint64_t i;
 	bool eliteOnly = ES_ELITEONLY;
 	for (i = 0; i < 0xFFFFFFFF; i++) {			
-		its = i;
+
 		ga.calculateFitness();			
 
 
@@ -84,7 +85,7 @@ int main(){
 		if (abs(ga.getFittestChromosome()->getFitness() - OPTIMAL_FITNESS) <= ERROR_FITNESS)
 			break;
 
-		if (i < 200000) { //Stop crossover and let ES guide the population
+		if (i < 160) { //Stop crossover and let ES guide the population
 			ga.selectionRoulette();
 			ga.generateRouletteMatingPool();
 			ga.setMutationOperator(&mutU);
@@ -94,14 +95,31 @@ int main(){
 		ga.setMutationOperator(&mut);
 		ga.evolutionStrategy(ES_NOFFSPRING, eliteOnly);		
 
+		if (i == 20) {
+			/*
+			mutvec.clear();
+			mutvec.push_back(NULL); //N
+			mutvec.push_back(NULL);
+			mutvec.push_back(NULL);
+			mutvec.push_back(&mutG); //V
+			mutvec.push_back(&mutG);
+			mutvec.push_back(&mutG);
+			mutvec.push_back(&mutG); //B
+			mutvec.push_back(&mutG);
+			mut.setMutationVector(mutvec);
+			*/
+			eliteOnly = true;
+		}
+
 		if (i == 3000)
 			mutG.setStdDev(0.0001);		
-		if (i == 6000) 
+		/*if (i == 6000) 
 			mutG.setStdDev(0.00001);
-		if (i == 12000) {
+			*/
+		/*if (i == 12000) {
 			mutG.setStdDev(0.000001);
 			eliteOnly = false;
-		}				
+		}*/				
 		
 	}
 

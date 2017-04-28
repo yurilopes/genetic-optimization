@@ -4,8 +4,6 @@
 
 #include "genetic-algorithm.h"
 
-int its = 0;
-
 vector<Gene*> *getGenotype7() {
 	GeneValue minSeed, maxSeed;
 	vector<Gene *> *genotype = new vector<Gene *>();
@@ -120,14 +118,17 @@ double fitnessFunction7(Chromosome * chromosome) {
 	double violations[14] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 	int iv = 0;
-
+	double sum = 0;
 	for (int i = 0; i < 2; i++) {
-		if ((Q[i] * TL[i]) / B[i] > 6000.0) {
-			violated = true;
-			violations[iv] = 6000.0 - ((Q[i] * TL[i]) / B[i]);
-		}
-		iv++;
+		sum += (Q[i] * TL[i]) / B[i];
 	}
+
+	if (sum > 6000.0) {
+		violated = true;
+		violations[iv] = 6000.0 - sum;
+	}
+
+	iv++;
 
 	for (int i = 0; i < 2; i++) {
 		for (int j = 0; j < 3; j++) {
@@ -154,14 +155,6 @@ double fitnessFunction7(Chromosome * chromosome) {
 		for (int i = 0; i <14; i++)
 			punish += abs(violations[i]);
 		punish *= PUNISHMENT_FACTOR;
-	}
-
-	if (its == 50) {
-		cout << "--------------------------------------" << endl;
-		chromosome->print();
-
-		printf("iv=%d\nF=%f\nP=%f\n", iv, fitness, fitness + punish);
-		system("pause");
 	}
 
 	return fitness + punish;

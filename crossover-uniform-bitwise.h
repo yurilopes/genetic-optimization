@@ -9,11 +9,12 @@ More info at: https://en.wikipedia.org/wiki/Crossover_(genetic_algorithm)
 #include "crossover.h"
 #include <random>
 #include <bitset>
+#include <climits>
 
 class CrossoverUniformBitwise : public Crossover {
 	protected:
 		std::uniform_int_distribution<uint16_t>		*distribution = NULL;
-		std::mt19937								*randomGen = NULL;		
+		std::mt19937								*randomGen = NULL;
 
 	public:
 		void		crossover(Chromosome * parentX, Chromosome * parentY, Chromosome * childX, Chromosome * childY);
@@ -23,7 +24,7 @@ class CrossoverUniformBitwise : public Crossover {
 };
 
 void CrossoverUniformBitwise::crossover(Chromosome * parentX, Chromosome * parentY, Chromosome * childX, Chromosome * childY) {
-	
+
 	/*
 									****************
 									*** WARNING! ***
@@ -37,7 +38,7 @@ void CrossoverUniformBitwise::crossover(Chromosome * parentX, Chromosome * paren
 		//First we iterate through the genes
 
 		Gene *genXV = (*parentX->getGenes())[i];
-		Gene *genYV = (*parentY->getGenes())[i];		
+		Gene *genYV = (*parentY->getGenes())[i];
 
 		bitset<sizeof(uint64_t)*CHAR_BIT> bX(genXV->getValue().uint64Value);
 		bitset<sizeof(uint64_t)*CHAR_BIT> bY(genYV->getValue().uint64Value);

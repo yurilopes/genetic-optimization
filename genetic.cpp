@@ -1,7 +1,7 @@
 //Comment this line below if not running in Visual Studio
-#include "stdafx.h"
+//#include "stdafx.h"
 
-using namespace std; 
+using namespace std;
 
 #include "genetic-algorithm.h"
 #include "mutation-uniform.h"
@@ -11,81 +11,107 @@ using namespace std;
 
 #include "examples.h"
 
-#define ERROR_FITNESS		1e-5
+#define FITNESS_CLOSENESS	0.9999
 
 #define	OPT_MODE			MODE_MAXIMIZE
-#define OPTIMAL_FITNESS		-38499.46512
-#define POPULATION_SIZE		4000
-#define ITERATION_SHOW		10
+#define OPTIMAL_FITNESS		-285519.9508
+#define POPULATION_SIZE		1000
+#define ITERATION_SHOW		100
 #define ELITE_SIZE			25
 #define CROSSOVER_PROB		1.0f
-#define MUTATION_PROB		0.1f
+#define MUTATION_PROB		0.05f
 #define ES_NOFFSPRING		50
 #define ES_ELITEONLY		false
+#define IT_STOP_CROSSOVER	500
 
-int main(){	
+int main(){
 
-	GeneticAlgorithm ga(getGenotype7());
-	ga.setFitnessFunction(fitnessFunction7);
+	GeneticAlgorithm ga(getGenotype8());
+	ga.setFitnessFunction(fitnessFunction8);
 	ga.setOptimizationMode(OPT_MODE);
-	ga.setElitism(true);	
+	ga.setElitism(true);
 	ga.setEliteSize(ELITE_SIZE);
-	
+
 	CrossoverUniformBitwise cross;
 	ga.setCrossoverOperator(&cross);
 	ga.setCrossoverProbability(CROSSOVER_PROB);
-		
-	/*
-	MutationGaussian mutGauss(0.0, 0.005);
-	MutationUniform mutUniform;
-	vector<MutationVectorized *> mutVect;
-	mutVect.push_back(&mutGauss);
-	mutVect.push_back(&mutUniform);
-	MutationVector mut(mutVect); 
-	*/
 
-	//MutationUniform mut;
 	MutationGaussian mutG(0.0, 0.01);
 	MutationUniform mutU;
-	vector<MutationVectorized *> mutvec;	
-	mutvec.push_back(NULL); //N
-	mutvec.push_back(NULL);
-	mutvec.push_back(NULL);
+	vector<MutationVectorized *> mutvec;
+	mutvec.push_back(&mutU); //N
+	mutvec.push_back(&mutU);
+	mutvec.push_back(&mutU);
+	mutvec.push_back(&mutU);
+	mutvec.push_back(&mutU);
+	mutvec.push_back(&mutU);
 	mutvec.push_back(&mutG); //V
+	mutvec.push_back(&mutG);
+	mutvec.push_back(&mutG);
+	mutvec.push_back(&mutG);
 	mutvec.push_back(&mutG);
 	mutvec.push_back(&mutG);
 	mutvec.push_back(&mutG); //B
 	mutvec.push_back(&mutG);
+	mutvec.push_back(&mutG);
+	mutvec.push_back(&mutG);
+	mutvec.push_back(&mutG);
 	mutvec.push_back(&mutG); //TL
 	mutvec.push_back(&mutG);
+	mutvec.push_back(&mutG);
+	mutvec.push_back(&mutG);
+	mutvec.push_back(&mutG);
 	MutationVector mut(mutvec);
-	
+
 
 	ga.setMutationOperator(&mutU);
 	ga.enableMutation(true);
-	ga.setMutationProbability(MUTATION_PROB);	
+	ga.setMutationProbability(MUTATION_PROB);
 
 	ga.initializePopulation(POPULATION_SIZE);
 
 	clock_t timeBegin = clock(); //Starting time
 
-	uint64_t i;
-	bool eliteOnly = ES_ELITEONLY;
-	for (i = 0; i < 0xFFFFFFFF; i++) {			
+	Chromosome *lastChm = new Chromosome(ga.getFittestChromosome());
 
-		ga.calculateFitness();			
+	printf("CHAR_BIT %d\n", CHAR_BIT);
+
+	uint64_t i, countEqual = 0;
+	bool eliteOnly = ES_ELITEONLY;
+	for (i = 0; i < 0xFFFFFFFF; i++) {
+
+		ga.calculateFitness();
 
 
 		if (i % ITERATION_SHOW == 0) {
 			cout << "Iteration " << i << endl;
 			cout << "Fittest chromosome:" << endl;
 			ga.printFittestChromosome();
+			cout << "Std Dev: " << mutG.getStdDev() << endl;
 		}
 
-		if (abs(ga.getFittestChromosome()->getFitness() - OPTIMAL_FITNESS) <= ERROR_FITNESS)
+		if (ga.getFittestChromosome()->getFitness() / OPTIMAL_FITNESS >= FITNESS_CLOSENESS
+			&&
+			ga.getFittestChromosome()->getFitness() / OPTIMAL_FITNESS <= 1.0 + (1.0 - FITNESS_CLOSENESS))
 			break;
 
-		if (i < 160) { //Stop crossover and let ES guide the population
+		//Last chromosome is not equals the best one
+		if (!ga.getFittestChromosome()->equals(lastChm)) {
+			delete lastChm;
+			lastChm = new Chromosome(ga.getFittestChromosome());
+			countEqual = 0;
+		}
+		else {
+			countEqual++;
+		}
+
+		if (countEqual >= 200){
+			countEqual = 0;
+			if(mutG.getStdDev()>=0.001)
+				mutG.setStdDev(mutG.getStdDev()/10.0);
+		}
+
+		if (i < IT_STOP_CROSSOVER) { //Stop crossover and let ES guide the population
 			ga.selectionRoulette();
 			ga.generateRouletteMatingPool();
 			ga.setMutationOperator(&mutU);
@@ -93,34 +119,12 @@ int main(){
 		}
 
 		ga.setMutationOperator(&mut);
-		ga.evolutionStrategy(ES_NOFFSPRING, eliteOnly);		
+		ga.evolutionStrategy(ES_NOFFSPRING, eliteOnly);
 
-		if (i == 20) {
-			/*
-			mutvec.clear();
-			mutvec.push_back(NULL); //N
-			mutvec.push_back(NULL);
-			mutvec.push_back(NULL);
-			mutvec.push_back(&mutG); //V
-			mutvec.push_back(&mutG);
-			mutvec.push_back(&mutG);
-			mutvec.push_back(&mutG); //B
-			mutvec.push_back(&mutG);
-			mut.setMutationVector(mutvec);
-			*/
-			eliteOnly = true;
+		if (i == IT_STOP_CROSSOVER) {
+			ga.setPopulationSurvivalSize(ELITE_SIZE);
 		}
 
-		if (i == 3000)
-			mutG.setStdDev(0.0001);		
-		/*if (i == 6000) 
-			mutG.setStdDev(0.00001);
-			*/
-		/*if (i == 12000) {
-			mutG.setStdDev(0.000001);
-			eliteOnly = false;
-		}*/				
-		
 	}
 
 	clock_t timeEnd = clock(); //Ending time
@@ -134,8 +138,8 @@ int main(){
 	ga.printFittestChromosome();
 	cout << endl;
 
-	
+
 
     return (int)ga.getFittestChromosome()->getFitness();
-	
+
 }

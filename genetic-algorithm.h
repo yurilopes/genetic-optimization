@@ -7,10 +7,6 @@
 #include <ctime>
 #include <limits>
 
-#if CHAR_BIT != 8
-#pragma message("CHAR_BIT is not 8 bits long. This could lead to erratic behaviour and loss of information.")
-#endif // CHAR_BIT != 8
-
 #include "population.h"
 #include "mutation.h"
 #include "crossover.h"
@@ -307,6 +303,7 @@ inline size_t GeneticAlgorithm::getPopulationSize()
 {
 	if (gPopulation && gPopulation->getChromosomes())
 		return gPopulation->getChromosomes()->size();
+	return 0;
 }
 
 inline size_t GeneticAlgorithm::getPopulationSurvivalSize()

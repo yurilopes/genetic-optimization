@@ -1,5 +1,5 @@
 //Comment this line below if not running in Visual Studio
-//#include "stdafx.h"
+#include "stdafx.h"
 
 using namespace std;
 
@@ -11,23 +11,23 @@ using namespace std;
 
 #include "examples.h"
 
-#define FITNESS_CLOSENESS	0.9999
+#define FITNESS_CLOSENESS	0.99
 
 #define	OPT_MODE			MODE_MAXIMIZE
-#define OPTIMAL_FITNESS		-285519.9508
-#define POPULATION_SIZE		1000
+#define OPTIMAL_FITNESS		-3.557463
+#define POPULATION_SIZE		2000
 #define ITERATION_SHOW		100
 #define ELITE_SIZE			25
 #define CROSSOVER_PROB		1.0f
 #define MUTATION_PROB		0.05f
-#define ES_NOFFSPRING		50
+#define ES_NOFFSPRING		20
 #define ES_ELITEONLY		false
-#define IT_STOP_CROSSOVER	500
+#define IT_STOP_CROSSOVER	2000
 
 int main(){
 
-	GeneticAlgorithm ga(getGenotype8());
-	ga.setFitnessFunction(fitnessFunction8);
+	GeneticAlgorithm ga(getGenotype5());
+	ga.setFitnessFunction(fitnessFunction5);
 	ga.setOptimizationMode(OPT_MODE);
 	ga.setElitism(true);
 	ga.setEliteSize(ELITE_SIZE);
@@ -38,29 +38,14 @@ int main(){
 
 	MutationGaussian mutG(0.0, 0.01);
 	MutationUniform mutU;
-	vector<MutationVectorized *> mutvec;
-	mutvec.push_back(&mutU); //N
+	vector<MutationVectorized *> mutvec;	
+	mutvec.push_back(&mutG);
+	mutvec.push_back(&mutG);
+	mutvec.push_back(&mutG);
 	mutvec.push_back(&mutU);
 	mutvec.push_back(&mutU);
 	mutvec.push_back(&mutU);
-	mutvec.push_back(&mutU);
-	mutvec.push_back(&mutU);
-	mutvec.push_back(&mutG); //V
-	mutvec.push_back(&mutG);
-	mutvec.push_back(&mutG);
-	mutvec.push_back(&mutG);
-	mutvec.push_back(&mutG);
-	mutvec.push_back(&mutG);
-	mutvec.push_back(&mutG); //B
-	mutvec.push_back(&mutG);
-	mutvec.push_back(&mutG);
-	mutvec.push_back(&mutG);
-	mutvec.push_back(&mutG);
-	mutvec.push_back(&mutG); //TL
-	mutvec.push_back(&mutG);
-	mutvec.push_back(&mutG);
-	mutvec.push_back(&mutG);
-	mutvec.push_back(&mutG);
+	mutvec.push_back(&mutU);	
 	MutationVector mut(mutvec);
 
 
@@ -73,8 +58,6 @@ int main(){
 	clock_t timeBegin = clock(); //Starting time
 
 	Chromosome *lastChm = new Chromosome(ga.getFittestChromosome());
-
-	printf("CHAR_BIT %d\n", CHAR_BIT);
 
 	uint64_t i, countEqual = 0;
 	bool eliteOnly = ES_ELITEONLY;

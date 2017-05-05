@@ -551,6 +551,14 @@ vector<Gene*> *getGenotype5() {
 		
 	//y1..y4
 	for (int i = 0; i < 4; i++) {
+		if(i==1){
+			minSeed2.uint8Value = 0;
+			maxSeed2.uint8Value = 0;
+		}
+		else {
+			minSeed2.uint8Value = 0;
+			maxSeed2.uint8Value = 1;
+		}
 		gene = new Gene(UINT8);
 		gene->setSeedRange(minSeed2, maxSeed2);
 		gene->enableBounding(true);
@@ -579,7 +587,7 @@ double fitnessFunction5(Chromosome * chromosome) {
 	if (std::isnan(x3) || std::isinf(x3))
 		return -INFINITY;
 
-	double fitness = -(pow((y1 - 1.0), 2.0) + pow((y2 - 2.0), 2.0) + pow((y3 - 1.0), 2.0) - log(y4 + 1.0) + pow((x1 - 1.0), 2.0) + pow((x2 - 2.0), 2.0) + pow((x3 - 3.0), 2.0));
+	double fitness = -(pow((y1 - 1.0), 2.0) + pow((y2 - 1.0), 2.0) + pow((y3 - 1.0), 2.0) - log(y4 + 1.0) + pow((x1 - 1.0), 2.0) + pow((x2 - 2.0), 2.0) + pow((x3 - 3.0), 2.0));
 	double punish = 0;
 
 	bool violated = false;

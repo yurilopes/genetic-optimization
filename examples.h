@@ -551,14 +551,6 @@ vector<Gene*> *getGenotype5() {
 		
 	//y1..y4
 	for (int i = 0; i < 4; i++) {
-		if(i==1){
-			minSeed2.uint8Value = 0;
-			maxSeed2.uint8Value = 0;
-		}
-		else {
-			minSeed2.uint8Value = 0;
-			maxSeed2.uint8Value = 1;
-		}
 		gene = new Gene(UINT8);
 		gene->setSeedRange(minSeed2, maxSeed2);
 		gene->enableBounding(true);

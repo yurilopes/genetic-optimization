@@ -44,6 +44,7 @@ class Chromosome{
 		void								setAccNormalizedFitness(double fit);
 		void								print();
 		bool								equals(Chromosome * ind);
+		void								clone(Chromosome * original);
 
         static bool							compareMaximize(Chromosome *ind0, Chromosome *ind1);
 		static bool							compareMinimize(Chromosome *ind0, Chromosome *ind1);
@@ -222,6 +223,33 @@ inline bool Chromosome::equals(Chromosome * ind)
 	}
 	return true;
 
+}
+
+inline void Chromosome::clone(Chromosome * original)
+{
+	fitness = original->getFitness();
+	accNormalizedFitness = original->getAccNormalizedFitness();
+	fitnessFunction = original->getFitnessFunction();
+
+	/*
+	Now we clone the gene vector.
+	A simple
+	genes = new vector<Gene *>(*original->getGenes());
+	won't do!
+
+	We have to create copies of each gene. Ohterwise we are just copying pointers and the objects themselves still have only one instance
+	in memory.
+	We want to create copies of the Gene objects' instances.
+	*/
+
+	deleteGenes();
+
+	genes = new vector<Gene *>();
+	for (vector<Gene *>::iterator it = original->getGenes()->begin(); it != original->getGenes()->end(); it++) {
+		Gene *gen = *it;
+		Gene *newGene = new Gene(gen);
+		genes->push_back(newGene);
+	}
 }
 
 double Chromosome::calculateFitness(){

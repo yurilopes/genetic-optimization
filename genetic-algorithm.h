@@ -231,6 +231,10 @@ inline void GeneticAlgorithm::crossOver()
 				mutateChromosome(childYP);
 			}
 		}
+		else {
+			childXP->clone(parentX);
+			childYP->clone(parentY);
+		}
 	}
 
 }

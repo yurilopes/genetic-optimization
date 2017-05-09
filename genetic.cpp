@@ -14,20 +14,21 @@ using namespace std;
 #define FITNESS_CLOSENESS	0.99
 
 #define	OPT_MODE			MODE_MAXIMIZE
-#define OPTIMAL_FITNESS		-3.557463
-#define POPULATION_SIZE		2000
-#define ITERATION_SHOW		100
+#define OPTIMAL_FITNESS		-38499.8
+#define POPULATION_SIZE		250
+#define ITERATION_SHOW		1000
 #define ELITE_SIZE			25
-#define CROSSOVER_PROB		1.0f
-#define MUTATION_PROB		0.05f
-#define ES_NOFFSPRING		20
+#define CROSSOVER_PROB		0.7f
+#define MUTATION_PROB		0.001f
+#define ES_ENABLED			true
+#define ES_NOFFSPRING		50
 #define ES_ELITEONLY		false
-#define IT_STOP_CROSSOVER	2000
+#define IT_STOP_CROSSOVER	700
 
 int main(){
 
-	GeneticAlgorithm ga(getGenotype5());
-	ga.setFitnessFunction(fitnessFunction5);
+	GeneticAlgorithm ga(getGenotype7());
+	ga.setFitnessFunction(fitnessFunction7);
 	ga.setOptimizationMode(OPT_MODE);
 	ga.setElitism(true);
 	ga.setEliteSize(ELITE_SIZE);
@@ -38,14 +39,17 @@ int main(){
 
 	MutationGaussian mutG(0.0, 0.01);
 	MutationUniform mutU;
-	vector<MutationVectorized *> mutvec;	
-	mutvec.push_back(&mutG);
-	mutvec.push_back(&mutG);
-	mutvec.push_back(&mutG);
+	vector<MutationVectorized *> mutvec;		
 	mutvec.push_back(&mutU);
 	mutvec.push_back(&mutU);
 	mutvec.push_back(&mutU);
-	mutvec.push_back(&mutU);	
+	mutvec.push_back(&mutG);
+	mutvec.push_back(&mutG);
+	mutvec.push_back(&mutG);		
+	mutvec.push_back(&mutG);
+	mutvec.push_back(&mutG);
+	mutvec.push_back(&mutG);
+	mutvec.push_back(&mutG);
 	MutationVector mut(mutvec);
 
 
@@ -100,9 +104,11 @@ int main(){
 			ga.setMutationOperator(&mutU);
 			ga.crossOver();
 		}
-
-		ga.setMutationOperator(&mut);
-		ga.evolutionStrategy(ES_NOFFSPRING, eliteOnly);
+		
+		if (ES_ENABLED) {
+			ga.setMutationOperator(&mut);
+			ga.evolutionStrategy(ES_NOFFSPRING, eliteOnly);
+		}
 
 		if (i == IT_STOP_CROSSOVER) {
 			ga.setPopulationSurvivalSize(ELITE_SIZE);
